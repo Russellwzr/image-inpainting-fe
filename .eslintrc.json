@@ -1,0 +1,27 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:prettier/recommended"
+    ],
+    "overrides": [],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "react-hooks"
+    ],
+    "rules": {
+        "react/display-name": "off",
+        // 检查 Hooks 的使用规则
+        "react-hooks/rules-of-hooks": "error",
+        // 检查依赖项的声明
+        "react-hooks/exhaustive-deps": "warn"
+    }
+}
