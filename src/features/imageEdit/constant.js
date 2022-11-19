@@ -7,4 +7,4 @@ export const DRAW_TYPE = {
 
 export const MAX_WIDTH = 1024
 
-export const MAX_HEIGHT = 700
+export const MAX_HEIGHT = 600

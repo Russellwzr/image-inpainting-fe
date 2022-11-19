@@ -7,7 +7,7 @@ import { zoomInAndOut, panMouseDown, panMouseMove, panMouseUp } from './fabricFu
 import { lassoMouseDown, lassoDragMouseDown, lassoDragMouseMove, lassoDragMouseUp } from './fabricFunc/lassoInteraction'
 
 const FabricEditor = () => {
-  const { drawCanvas, imageCanvas, drawType, penWidth } = useContext(FabricContext)
+  const { drawCanvas, imageCanvas, drawType, penWidth, hasImage } = useContext(FabricContext)
 
   // lasso.points: polygon control points
   // lasso.circles: fabric circle element for lass control points
@@ -136,8 +136,14 @@ const FabricEditor = () => {
   }, [drawCanvas, drawType])
 
   return (
-    <div>
-      <canvas ref={imageCanvas} id="image-container" style={{ border: '1px solid #ccc' }}></canvas>
+    <div className="flex justify-center mt-10">
+      <div className={`${hasImage ? `flex` : `hidden`}`}>
+        <canvas
+          ref={imageCanvas}
+          id="image-container"
+          className="border-gray-300 border-2 rounded-xl border-dashed"
+        ></canvas>
+      </div>
     </div>
   )
 }

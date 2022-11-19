@@ -1,7 +1,7 @@
 import { fabric } from 'fabric'
 import { MAX_HEIGHT, MAX_WIDTH } from '../constant'
 
-export const handleImageUpload = (e, drawCanvas, imageCanvas) => {
+export const handleImageUpload = (e, drawCanvas, imageCanvas, setHasImage) => {
   const file = e.target.files[0]
   if (!file) return
 
@@ -10,6 +10,8 @@ export const handleImageUpload = (e, drawCanvas, imageCanvas) => {
   img.src = fileUrl
 
   img.onload = () => {
+    setHasImage(true)
+
     URL.revokeObjectURL(img.src)
 
     const originWidth = img.width

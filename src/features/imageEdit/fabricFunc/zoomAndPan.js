@@ -1,6 +1,7 @@
 import { fabric } from 'fabric'
 
 export const zoomInAndOut = (opt, drawCanvas) => {
+  opt.e.preventDefault()
   const delta = opt.e.deltaY
   let zoom = drawCanvas.getZoom()
   zoom *= 0.999 ** delta

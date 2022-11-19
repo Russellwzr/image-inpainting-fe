@@ -7,6 +7,7 @@ export const FabricContext = React.createContext()
 const ImageEditor = () => {
   const drawCanvas = useRef(null)
   const imageCanvas = useRef(null)
+  const [hasImage, setHasImage] = useState(false)
   const [drawType, setDrawType] = useState(DRAW_TYPE.NORMAL)
   const [penWidth, setPenWidth] = useState(10)
   return (
@@ -18,10 +19,12 @@ const ImageEditor = () => {
         setDrawType,
         penWidth,
         setPenWidth,
+        hasImage,
+        setHasImage,
       }}
     >
-      <ToolBar />
       <FabricEditor />
+      <ToolBar />
     </FabricContext.Provider>
   )
 }
