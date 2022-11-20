@@ -99,6 +99,32 @@ const pointsArrayToObj = (points) => {
   return curvePoints
 }
 
+export const clearAllControlPoints = (drawCanvas, lassos) => {
+  for (let lassoIndex in lassos) {
+    for (let i = 0; i < lassos[lassoIndex].circles.length; i++) {
+      drawCanvas.remove(lassos[lassoIndex].circles[i])
+    }
+    lassos[lassoIndex].circles = []
+  }
+}
+
+export const drawAllControlPoints = (drawCanvas, lassos) => {
+  for (let lassoIndex in lassos) {
+    lassos[lassoIndex].circles = []
+    for (let i = 0; i < lassos[lassoIndex].points.length; i++) {
+      const circle = new fabric.Circle({
+        top: lassos[lassoIndex].points[i].y - RADIUS,
+        left: lassos[lassoIndex].points[i].x - RADIUS,
+        radius: RADIUS,
+        fill: 'red',
+        selectable: false,
+      })
+      lassos[lassoIndex].circles.push(circle)
+      drawCanvas.add(circle)
+    }
+  }
+}
+
 const drawControlPoints = (drawCanvas, lassos, curIndex) => {
   // delete previous points
   for (let i = 0; i < lassos[curIndex].circles.length; i++) {
@@ -108,11 +134,10 @@ const drawControlPoints = (drawCanvas, lassos, curIndex) => {
   lassos[curIndex].circles = []
   for (let i = 0; i < lassos[curIndex].points.length; i++) {
     const circle = new fabric.Circle({
-      top: lassos[curIndex].points[i].y,
-      left: lassos[curIndex].points[i].x,
+      top: lassos[curIndex].points[i].y - RADIUS,
+      left: lassos[curIndex].points[i].x - RADIUS,
       radius: RADIUS,
       fill: 'red',
-      stroke: 'red',
       selectable: false,
     })
     lassos[curIndex].circles.push(circle)
@@ -125,21 +150,20 @@ const drawContour = (drawCanvas, lassos, curIndex) => {
   if (points.length < 2) return
   const newPoints = calCurve(pointsObjToArray(points))
   const curvePoints = pointsArrayToObj(newPoints)
-  console.log('polygons', lassos[curIndex].polygon)
   if (lassos[curIndex].polygon !== null) {
     drawCanvas.remove(lassos[curIndex].polygon)
   }
   lassos[curIndex].polygon = new fabric.Polyline(curvePoints, {
-    fill: 'red',
-    stroke: '#6639a6',
-    strokeWidth: 5,
+    fill: 'white',
+    selectable: false,
+    lassoIndex: curIndex,
   })
   drawCanvas.add(lassos[curIndex].polygon)
 }
 
 const drawLasso = (drawCanvas, lassos, curIndex) => {
-  drawControlPoints(drawCanvas, lassos, curIndex)
   drawContour(drawCanvas, lassos, curIndex)
+  drawControlPoints(drawCanvas, lassos, curIndex)
 }
 
 export const lassoMouseDown = (p, drawCanvas, lassos, curIndex) => {
@@ -166,7 +190,7 @@ export const lassoDragMouseDown = (p, lassos, activeIndex) => {
       const y = currentLasso.points[i].y
       const dx = p.x - x
       const dy = p.y - y
-      if (dx * dx + dy * dy <= 25) {
+      if (dx * dx + dy * dy <= RADIUS * RADIUS + 10) {
         activeIndex.lassoIndex = lassoIndex
         activeIndex.pointIndex = i
         break

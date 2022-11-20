@@ -32,3 +32,8 @@ export const panMouseUp = () => {
   // set isPanning to false
   return false
 }
+
+export const viewReset = (drawCanvas) => {
+  drawCanvas.setZoom(1)
+  drawCanvas.absolutePan({ x: 0, y: 0 })
+}

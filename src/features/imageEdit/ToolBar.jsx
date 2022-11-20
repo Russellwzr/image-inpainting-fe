@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
 import React, { useCallback, useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEraser, faDownload, faEye, faUpload } from '@fortawesome/free-solid-svg-icons'
@@ -8,6 +6,7 @@ import { Slider } from 'antd'
 import { FabricContext } from './ImageEditor'
 import { DRAW_TYPE } from './constant'
 import { handleImageUpload, handleImageDownload } from './fabricFunc/imageTransport'
+import { viewReset } from './fabricFunc/zoomAndPan'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
 
@@ -51,6 +50,7 @@ const ToolBar = () => {
           </InputButton>
           <ToolButton onClick={handleDownload} icon={faDownload} />
           <ToolButton
+            isActive={drawType === DRAW_TYPE.FREE_DRAW}
             onClick={() =>
               drawType === DRAW_TYPE.FREE_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.FREE_DRAW)
             }
@@ -69,6 +69,7 @@ const ToolBar = () => {
             />
           </div>
           <ToolButton icon={faEye} />
+          <button onClick={() => viewReset(drawCanvas.current)}>View Reset</button>
           <button
             onClick={() =>
               drawType === DRAW_TYPE.LASSO_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.LASSO_DRAW)
