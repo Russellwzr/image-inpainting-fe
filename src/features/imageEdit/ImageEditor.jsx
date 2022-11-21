@@ -12,6 +12,11 @@ const ImageEditor = () => {
   const [hasImage, setHasImage] = useState(false)
   const [drawType, setDrawType] = useState(DRAW_TYPE.NORMAL)
   const [penWidth, setPenWidth] = useState(10)
+  // lassos, activeIndex, drawType
+  const [snapShots, setSnapShots] = useState([
+    { lassos: [], activeIndex: { lassoIndex: -1, pointIndex: -1 }, freeDraw: [], drawType: DRAW_TYPE.NORMAL },
+  ])
+  const [snapShotsID, setSnapShotsID] = useState(0)
   return (
     <FabricContext.Provider
       value={{
@@ -27,6 +32,10 @@ const ImageEditor = () => {
         setLassos,
         activeIndex,
         setActiveIndex,
+        snapShots,
+        setSnapShots,
+        snapShotsID,
+        setSnapShotsID,
       }}
     >
       <FabricEditor />

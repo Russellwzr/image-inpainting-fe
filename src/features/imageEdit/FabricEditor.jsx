@@ -13,16 +13,35 @@ import {
   updateFabricCanvas,
 } from './fabricFunc/lassoInteraction'
 
+import { getCurState, storeSnapShots } from './fabricFunc/fabricSnapShots'
+
 const FabricEditor = () => {
-  const { drawCanvas, imageCanvas, drawType, penWidth, hasImage, lassos, setLassos, activeIndex, setActiveIndex } =
-    useContext(FabricContext)
+  const {
+    drawCanvas,
+    imageCanvas,
+    drawType,
+    penWidth,
+    hasImage,
+    lassos,
+    setLassos,
+    activeIndex,
+    setActiveIndex,
+    snapShots,
+    setSnapShots,
+    snapShotsID,
+    setSnapShotsID,
+  } = useContext(FabricContext)
 
   const isPanning = useRef(false) // panning flag
+
+  const addStateToSnapShots = useCallback(() => {
+    const curState = getCurState(drawCanvas.current.getObjects(), lassos, activeIndex, drawType)
+    storeSnapShots(snapShots, snapShotsID, curState, setSnapShots, setSnapShotsID)
+  }, [activeIndex, drawCanvas, drawType, lassos, setSnapShots, setSnapShotsID, snapShots, snapShotsID])
 
   const mouseDown = useCallback(
     (opt) => {
       const p = opt.absolutePointer
-      console.log('cao', lassos)
       switch (drawType) {
         case DRAW_TYPE.FREE_DRAW: {
           break
@@ -80,14 +99,17 @@ const FabricEditor = () => {
   const mouseUp = useCallback(() => {
     switch (drawType) {
       case DRAW_TYPE.FREE_DRAW: {
+        addStateToSnapShots()
         break
       }
       case DRAW_TYPE.LASSO_DRAW: {
+        addStateToSnapShots()
         break
       }
       case DRAW_TYPE.LASSO_DRAG_POINTS: {
         const newActiveIndex = lassoDragMouseUp()
         setActiveIndex(newActiveIndex)
+        addStateToSnapShots()
         break
       }
       case DRAW_TYPE.NORMAL: {
@@ -97,7 +119,7 @@ const FabricEditor = () => {
       default:
         break
     }
-  }, [drawType, setActiveIndex])
+  }, [addStateToSnapShots, drawType, setActiveIndex])
 
   // init fabric canvas
   useEffect(() => {

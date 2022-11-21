@@ -1,18 +1,32 @@
 import React, { useCallback, useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEraser, faDownload, faEye, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { faEraser, faDownload, faEye, faUpload, faShare, faReply } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider } from 'antd'
 import { FabricContext } from './ImageEditor'
 import { DRAW_TYPE } from './constant'
 import { handleImageUpload, handleImageDownload } from './fabricFunc/imageTransport'
 import { viewReset } from './fabricFunc/zoomAndPan'
+import { undoCommand, redoCommand, restoreSnapShot, canUndo, canRedo } from './fabricFunc/fabricSnapShots'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
 
 const ToolBar = () => {
-  const { drawCanvas, imageCanvas, drawType, setDrawType, penWidth, setPenWidth, hasImage, setHasImage } =
-    useContext(FabricContext)
+  const {
+    drawCanvas,
+    imageCanvas,
+    drawType,
+    setDrawType,
+    penWidth,
+    setPenWidth,
+    hasImage,
+    setHasImage,
+    setLassos,
+    setActiveIndex,
+    snapShots,
+    snapShotsID,
+    setSnapShotsID,
+  } = useContext(FabricContext)
 
   const handleUpload = useCallback(
     (e) => {
@@ -40,6 +54,7 @@ const ToolBar = () => {
             </div>
           </InputButton>
         </div>
+        {/* Tool Bar */}
         <div
           className={`mt-8 px-6 py-1 space-x-4 border-gray-300 border-2 rounded-xl border-dashed ${
             hasImage ? `flex` : `hidden`
@@ -49,6 +64,24 @@ const ToolBar = () => {
             <FontAwesomeIcon icon={faUpload} />
           </InputButton>
           <ToolButton onClick={handleDownload} icon={faDownload} />
+          <ToolButton
+            onClick={() => {
+              if (!canUndo(snapShotsID)) return
+              const curState = undoCommand(snapShots, snapShotsID, setSnapShotsID)
+              restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
+            }}
+            icon={faReply}
+            disabled={!canUndo(snapShotsID)}
+          />
+          <ToolButton
+            onClick={() => {
+              if (!canRedo(snapShots, snapShotsID)) return
+              const curState = redoCommand(snapShots, snapShotsID, setSnapShotsID)
+              restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
+            }}
+            icon={faShare}
+            disabled={!canRedo(snapShots, snapShotsID)}
+          />
           <ToolButton
             isActive={drawType === DRAW_TYPE.FREE_DRAW}
             onClick={() =>

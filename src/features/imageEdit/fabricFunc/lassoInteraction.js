@@ -180,7 +180,6 @@ export const lassoMouseDown = (p, lassos, activeIndex) => {
 
 export const lassoDragMouseDown = (p, lassos) => {
   let activeIndex = { lassoIndex: -1, pointIndex: -1 }
-  console.log('drag', lassos)
   for (let i = 0; i < lassos.length; i++) {
     for (let j = 0; j < lassos[i].length; j++) {
       const x = lassos[i][j].x
