@@ -7,6 +7,8 @@ export const FabricContext = React.createContext()
 const ImageEditor = () => {
   const drawCanvas = useRef(null)
   const imageCanvas = useRef(null)
+  const [lassos, setLassos] = useState([]) // polygon control points
+  const [activeIndex, setActiveIndex] = useState({ lassoIndex: -1, pointIndex: -1 }) // current polygon element index
   const [hasImage, setHasImage] = useState(false)
   const [drawType, setDrawType] = useState(DRAW_TYPE.NORMAL)
   const [penWidth, setPenWidth] = useState(10)
@@ -21,6 +23,10 @@ const ImageEditor = () => {
         setPenWidth,
         hasImage,
         setHasImage,
+        lassos,
+        setLassos,
+        activeIndex,
+        setActiveIndex,
       }}
     >
       <FabricEditor />

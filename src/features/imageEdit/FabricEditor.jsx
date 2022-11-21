@@ -10,32 +10,34 @@ import {
   lassoDragMouseUp,
   clearAllControlPoints,
   drawAllControlPoints,
+  updateFabricCanvas,
 } from './fabricFunc/lassoInteraction'
 
 const FabricEditor = () => {
-  const { drawCanvas, imageCanvas, drawType, penWidth, hasImage } = useContext(FabricContext)
+  const { drawCanvas, imageCanvas, drawType, penWidth, hasImage, lassos, setLassos, activeIndex, setActiveIndex } =
+    useContext(FabricContext)
 
-  // lasso.points: polygon control points
-  // lasso.circles: fabric circle element for lass control points
-  // lasso.polygons: fabric polygon elements for lasso
-  const lassos = useRef({})
-  const activeIndex = useRef({ lassoIndex: -1, pointIndex: -1 }) // current polygon element index
-  const nextIndex = useRef(0) // map key for next polygon
   const isPanning = useRef(false) // panning flag
 
   const mouseDown = useCallback(
     (opt) => {
       const p = opt.absolutePointer
+      console.log('cao', lassos)
       switch (drawType) {
         case DRAW_TYPE.FREE_DRAW: {
           break
         }
         case DRAW_TYPE.LASSO_DRAW: {
-          lassoMouseDown(p, drawCanvas.current, lassos.current, nextIndex.current)
+          // add a new control point
+          const { newLassos, newActiveIndex } = lassoMouseDown(p, lassos, activeIndex)
+          setLassos(newLassos)
+          setActiveIndex(newActiveIndex)
           break
         }
         case DRAW_TYPE.LASSO_DRAG_POINTS: {
-          lassoDragMouseDown(p, lassos.current, activeIndex.current)
+          // search drag point
+          const newActiveIndex = lassoDragMouseDown(p, lassos)
+          setActiveIndex(newActiveIndex)
           break
         }
         case DRAW_TYPE.NORMAL: {
@@ -46,7 +48,7 @@ const FabricEditor = () => {
           break
       }
     },
-    [drawCanvas, drawType],
+    [activeIndex, drawType, lassos, setActiveIndex, setLassos],
   )
 
   const mouseMove = useCallback(
@@ -59,7 +61,9 @@ const FabricEditor = () => {
           break
         }
         case DRAW_TYPE.LASSO_DRAG_POINTS: {
-          lassoDragMouseMove(opt.absolutePointer, lassos.current, activeIndex.current, drawCanvas.current)
+          // update control point location
+          const newLassos = lassoDragMouseMove(opt.absolutePointer, lassos, activeIndex)
+          setLassos(newLassos)
           break
         }
         case DRAW_TYPE.NORMAL: {
@@ -70,7 +74,7 @@ const FabricEditor = () => {
           break
       }
     },
-    [drawCanvas, drawType],
+    [activeIndex, drawCanvas, drawType, lassos, setLassos],
   )
 
   const mouseUp = useCallback(() => {
@@ -82,7 +86,8 @@ const FabricEditor = () => {
         break
       }
       case DRAW_TYPE.LASSO_DRAG_POINTS: {
-        lassoDragMouseUp(activeIndex.current)
+        const newActiveIndex = lassoDragMouseUp()
+        setActiveIndex(newActiveIndex)
         break
       }
       case DRAW_TYPE.NORMAL: {
@@ -92,7 +97,7 @@ const FabricEditor = () => {
       default:
         break
     }
-  }, [drawType])
+  }, [drawType, setActiveIndex])
 
   // init fabric canvas
   useEffect(() => {
@@ -102,8 +107,10 @@ const FabricEditor = () => {
     }
   }, [drawCanvas])
 
-  // update fabric canvas attributes
+  // init after switch interaction mode
   useEffect(() => {
+    setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
+    clearAllControlPoints(drawCanvas.current)
     switch (drawType) {
       case DRAW_TYPE.FREE_DRAW: {
         drawCanvas.current.selection = false
@@ -132,20 +139,7 @@ const FabricEditor = () => {
       default:
         break
     }
-  }, [drawCanvas, drawType])
-
-  // update pen width
-  useEffect(() => {
-    drawCanvas.current.freeDrawingBrush.width = penWidth
-  }, [drawCanvas, penWidth])
-
-  // update control points
-  useEffect(() => {
-    if (drawType === DRAW_TYPE.LASSO_DRAG_POINTS) {
-      clearAllControlPoints(drawCanvas.current, lassos.current)
-      drawAllControlPoints(drawCanvas.current, lassos.current)
-    } else clearAllControlPoints(drawCanvas.current, lassos.current)
-  }, [drawCanvas, drawType])
+  }, [drawCanvas, drawType, setActiveIndex])
 
   // update events
   useEffect(() => {
@@ -158,6 +152,24 @@ const FabricEditor = () => {
     drawCanvas.current.on('mouse:move', mouseMove)
     drawCanvas.current.on('mouse:up', mouseUp)
   }, [drawCanvas, drawType, mouseDown, mouseMove, mouseUp])
+
+  // update pen width
+  useEffect(() => {
+    drawCanvas.current.freeDrawingBrush.width = penWidth
+  }, [drawCanvas, penWidth])
+
+  // draw control points for LASSO_DRAG_POINTS
+  useEffect(() => {
+    if (drawType === DRAW_TYPE.LASSO_DRAG_POINTS) {
+      drawAllControlPoints(drawCanvas.current, lassos)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawCanvas, drawType])
+
+  // update fabric canvas drawing
+  useEffect(() => {
+    updateFabricCanvas(drawCanvas.current, lassos, activeIndex)
+  }, [lassos, activeIndex, drawCanvas])
 
   return (
     <div className="flex justify-center mt-10">

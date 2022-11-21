@@ -2,6 +2,9 @@ import { fabric } from 'fabric'
 
 const RADIUS = 5
 
+const CIRCLE_TYPE = 'lasso-circle'
+const POLYGON_TYPE = 'lasso-polygon'
+
 const calCurve = (points, tension = 0.5, numOfSeg = 20, close = true) => {
   // Modified from https://github.com/gdenisov/cardinal-spline-js
 
@@ -99,114 +102,109 @@ const pointsArrayToObj = (points) => {
   return curvePoints
 }
 
-export const clearAllControlPoints = (drawCanvas, lassos) => {
-  for (let lassoIndex in lassos) {
-    for (let i = 0; i < lassos[lassoIndex].circles.length; i++) {
-      drawCanvas.remove(lassos[lassoIndex].circles[i])
-    }
-    lassos[lassoIndex].circles = []
+// clear previous lassos[activeIndex.lassoIndex]
+const clearPreviousElements = (drawCanvas, curIndex) => {
+  const fabricObjects = drawCanvas.getObjects()
+  for (let i = 0; i < fabricObjects.length; i++) {
+    const curElement = fabricObjects[i]
+    if (curElement?.lassoIndex === curIndex) drawCanvas.remove(curElement)
   }
 }
 
-export const drawAllControlPoints = (drawCanvas, lassos) => {
-  for (let lassoIndex in lassos) {
-    lassos[lassoIndex].circles = []
-    for (let i = 0; i < lassos[lassoIndex].points.length; i++) {
-      const circle = new fabric.Circle({
-        top: lassos[lassoIndex].points[i].y - RADIUS,
-        left: lassos[lassoIndex].points[i].x - RADIUS,
-        radius: RADIUS,
-        fill: 'red',
-        selectable: false,
-      })
-      lassos[lassoIndex].circles.push(circle)
-      drawCanvas.add(circle)
-    }
-  }
-}
-
+// draw control points for lassos[activeIndex.lassoIndex]
 const drawControlPoints = (drawCanvas, lassos, curIndex) => {
-  // delete previous points
-  for (let i = 0; i < lassos[curIndex].circles.length; i++) {
-    drawCanvas.remove(lassos[curIndex].circles[i])
-  }
-  // re-add points
-  lassos[curIndex].circles = []
-  for (let i = 0; i < lassos[curIndex].points.length; i++) {
+  for (let i = 0; i < lassos[curIndex].length; i++) {
     const circle = new fabric.Circle({
-      top: lassos[curIndex].points[i].y - RADIUS,
-      left: lassos[curIndex].points[i].x - RADIUS,
+      top: lassos[curIndex][i].y - RADIUS,
+      left: lassos[curIndex][i].x - RADIUS,
       radius: RADIUS,
       fill: 'red',
       selectable: false,
+      lassoIndex: curIndex,
+      elementType: CIRCLE_TYPE,
     })
-    lassos[curIndex].circles.push(circle)
     drawCanvas.add(circle)
   }
 }
 
+// draw contour for lassos[activeIndex.lassoIndex]
 const drawContour = (drawCanvas, lassos, curIndex) => {
-  const points = lassos[curIndex].points
+  const points = lassos[curIndex]
   if (points.length < 2) return
   const newPoints = calCurve(pointsObjToArray(points))
   const curvePoints = pointsArrayToObj(newPoints)
-  if (lassos[curIndex].polygon !== null) {
-    drawCanvas.remove(lassos[curIndex].polygon)
-  }
-  lassos[curIndex].polygon = new fabric.Polyline(curvePoints, {
+  const polygon = new fabric.Polyline(curvePoints, {
     fill: 'white',
     selectable: false,
     lassoIndex: curIndex,
+    elementType: POLYGON_TYPE,
   })
-  drawCanvas.add(lassos[curIndex].polygon)
+  drawCanvas.add(polygon)
 }
 
-const drawLasso = (drawCanvas, lassos, curIndex) => {
-  drawContour(drawCanvas, lassos, curIndex)
-  drawControlPoints(drawCanvas, lassos, curIndex)
+// update lassos[activeIndex.lassoIndex]
+export const updateFabricCanvas = (drawCanvas, lassos, activeIndex) => {
+  if (activeIndex.lassoIndex === -1) return
+  clearPreviousElements(drawCanvas, activeIndex.lassoIndex)
+  drawContour(drawCanvas, lassos, activeIndex.lassoIndex)
+  drawControlPoints(drawCanvas, lassos, activeIndex.lassoIndex)
 }
 
-export const lassoMouseDown = (p, drawCanvas, lassos, curIndex) => {
-  if (!(curIndex in lassos)) {
-    lassos[curIndex] = {}
-    lassos[curIndex]['points'] = []
-    lassos[curIndex]['circles'] = []
-    lassos[curIndex]['polygon'] = null
+export const clearAllControlPoints = (drawCanvas) => {
+  const fabricObjects = drawCanvas.getObjects()
+  for (let i = 0; i < fabricObjects.length; i++) {
+    const curElement = fabricObjects[i]
+    if (curElement?.elementType === CIRCLE_TYPE) drawCanvas.remove(curElement)
   }
-  lassos[curIndex].points.push({
+}
+
+export const drawAllControlPoints = (drawCanvas, lassos) => {
+  for (let i = 0; i < lassos.length; i++) {
+    drawControlPoints(drawCanvas, lassos, i)
+  }
+}
+
+export const lassoMouseDown = (p, lassos, activeIndex) => {
+  let curIndex = activeIndex.lassoIndex
+  let newLassos = [...lassos]
+  if (curIndex === -1) {
+    curIndex = lassos.length
+    newLassos.push([])
+  }
+  newLassos[curIndex].push({
     x: p.x,
     y: p.y,
   })
-  drawLasso(drawCanvas, lassos, curIndex)
+  return { newLassos: newLassos, newActiveIndex: { ...activeIndex, lassoIndex: curIndex } }
 }
 
-export const lassoDragMouseDown = (p, lassos, activeIndex) => {
-  activeIndex.lassoIndex = -1
-  activeIndex.pointIndex = -1
-  for (let lassoIndex in lassos) {
-    const currentLasso = lassos[lassoIndex]
-    for (let i = 0; i < currentLasso.points.length; i++) {
-      const x = currentLasso.points[i].x
-      const y = currentLasso.points[i].y
+export const lassoDragMouseDown = (p, lassos) => {
+  let activeIndex = { lassoIndex: -1, pointIndex: -1 }
+  console.log('drag', lassos)
+  for (let i = 0; i < lassos.length; i++) {
+    for (let j = 0; j < lassos[i].length; j++) {
+      const x = lassos[i][j].x
+      const y = lassos[i][j].y
       const dx = p.x - x
       const dy = p.y - y
       if (dx * dx + dy * dy <= RADIUS * RADIUS + 10) {
-        activeIndex.lassoIndex = lassoIndex
-        activeIndex.pointIndex = i
+        activeIndex.lassoIndex = i
+        activeIndex.pointIndex = j
         break
       }
     }
   }
+  return activeIndex
 }
 
-export const lassoDragMouseMove = (p, lassos, activeIndex, drawCanvas) => {
-  if (activeIndex.lassoIndex === -1) return
-  lassos[activeIndex.lassoIndex].points[activeIndex.pointIndex].x = p.x
-  lassos[activeIndex.lassoIndex].points[activeIndex.pointIndex].y = p.y
-  drawLasso(drawCanvas, lassos, activeIndex.lassoIndex)
+export const lassoDragMouseMove = (p, lassos, activeIndex) => {
+  if (activeIndex.lassoIndex === -1) return lassos
+  let newLassos = [...lassos]
+  newLassos[activeIndex.lassoIndex][activeIndex.pointIndex].x = p.x
+  newLassos[activeIndex.lassoIndex][activeIndex.pointIndex].y = p.y
+  return newLassos
 }
 
-export const lassoDragMouseUp = (activeIndex) => {
-  activeIndex.lassoIndex = -1
-  activeIndex.pointIndex = -1
+export const lassoDragMouseUp = () => {
+  return { lassoIndex: -1, pointIndex: -1 }
 }
