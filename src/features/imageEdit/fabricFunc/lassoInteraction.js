@@ -197,7 +197,7 @@ export const lassoDragMouseDown = (p, lassos) => {
 }
 
 export const lassoDragMouseMove = (p, lassos, activeIndex) => {
-  if (activeIndex.lassoIndex === -1) return lassos
+  if (activeIndex.lassoIndex === -1 || activeIndex.pointIndex === -1) return lassos
   let newLassos = [...lassos]
   newLassos[activeIndex.lassoIndex][activeIndex.pointIndex].x = p.x
   newLassos[activeIndex.lassoIndex][activeIndex.pointIndex].y = p.y

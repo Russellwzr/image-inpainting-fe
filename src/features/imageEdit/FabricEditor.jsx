@@ -126,6 +126,10 @@ const FabricEditor = () => {
   // init fabric canvas
   useEffect(() => {
     drawCanvas.current = new fabric.Canvas('image-container')
+    drawCanvas.current.selection = false
+    drawCanvas.current.skipTargetFind = true
+    drawCanvas.current.freeDrawingBrush.color = 'white'
+    drawCanvas.current.freeDrawingBrush.limitedToCanvasSize = true
     return () => {
       drawCanvas.current.dispose()
     }
@@ -136,22 +140,14 @@ const FabricEditor = () => {
     clearAllControlPoints(drawCanvas.current)
     switch (drawType) {
       case DRAW_TYPE.FREE_DRAW: {
-        drawCanvas.current.selection = false
-        drawCanvas.current.skipTargetFind = true
         drawCanvas.current.isDrawingMode = true
-        drawCanvas.current.freeDrawingBrush.color = 'white'
-        drawCanvas.current.freeDrawingBrush.limitedToCanvasSize = true
         break
       }
       case DRAW_TYPE.LASSO_DRAW: {
-        drawCanvas.current.selection = false
-        drawCanvas.current.skipTargetFind = true
         drawCanvas.current.isDrawingMode = false
         break
       }
       case DRAW_TYPE.LASSO_DRAG_POINTS: {
-        drawCanvas.current.selection = false
-        drawCanvas.current.skipTargetFind = true
         drawCanvas.current.isDrawingMode = false
         break
       }

@@ -9,6 +9,7 @@ import {
   faReply,
   faDrawPolygon,
   faHand,
+  faRotate,
 } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider } from 'antd'
@@ -33,6 +34,7 @@ const ToolBar = () => {
     setLassos,
     setActiveIndex,
     snapShots,
+    setSnapShots,
     snapShotsID,
     setSnapShotsID,
   } = useContext(FabricContext)
@@ -47,6 +49,20 @@ const ToolBar = () => {
   const handleDownload = useCallback(() => {
     handleImageDownload(drawCanvas)
   }, [drawCanvas])
+
+  const clearCanvas = useCallback(() => {
+    const fabricObjects = drawCanvas.current.getObjects()
+    for (let i = 0; i < fabricObjects.length; i++) {
+      drawCanvas.current.remove(fabricObjects[i])
+    }
+    setLassos([])
+    setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
+    setDrawType(DRAW_TYPE.NORMAL)
+    setSnapShots([
+      { lassos: [], activeIndex: { lassoIndex: -1, pointIndex: -1 }, freeDraw: [], drawType: DRAW_TYPE.NORMAL },
+    ])
+    setSnapShotsID(0)
+  }, [drawCanvas, setActiveIndex, setDrawType, setLassos, setSnapShots, setSnapShotsID])
 
   return (
     <div className="flex justify-center">
@@ -79,6 +95,8 @@ const ToolBar = () => {
           </InputButton>
 
           <ToolButton onClick={handleDownload} icon={faDownload} title="download" />
+
+          <ToolButton disabledPopConfirm={false} onClick={clearCanvas} icon={faRotate} title="clear" />
 
           <ToolButton
             onClick={() => {
