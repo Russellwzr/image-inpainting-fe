@@ -107,9 +107,11 @@ const FabricEditor = () => {
         break
       }
       case DRAW_TYPE.LASSO_DRAG_POINTS: {
+        if (activeIndex.pointIndex !== -1) {
+          addStateToSnapShots()
+        }
         const newActiveIndex = lassoDragMouseUp()
         setActiveIndex(newActiveIndex)
-        addStateToSnapShots()
         break
       }
       case DRAW_TYPE.NORMAL: {
@@ -119,7 +121,7 @@ const FabricEditor = () => {
       default:
         break
     }
-  }, [addStateToSnapShots, drawType, setActiveIndex])
+  }, [activeIndex, addStateToSnapShots, drawType, setActiveIndex])
 
   // init fabric canvas
   useEffect(() => {
@@ -131,7 +133,6 @@ const FabricEditor = () => {
 
   // init after switch interaction mode
   useEffect(() => {
-    setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
     clearAllControlPoints(drawCanvas.current)
     switch (drawType) {
       case DRAW_TYPE.FREE_DRAW: {

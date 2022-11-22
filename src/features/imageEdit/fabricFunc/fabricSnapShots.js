@@ -1,5 +1,7 @@
 import _ from 'lodash'
 
+const MAX_SNAPSHOTS = 1000
+
 export const getCurState = (fabricObjects, lassos, activeIndex, drawType) => {
   let freeDraw = []
   for (let i = 0; i < fabricObjects.length; i++) {
@@ -23,6 +25,10 @@ export const storeSnapShots = (snapShots, snapShotID, curState, setSnapShots, se
   }
   newSnapShots.push(curState)
   snapShotID += 1
+  if (newSnapShots.length > MAX_SNAPSHOTS) {
+    newSnapShots.shift()
+    snapShotID -= 1
+  }
   setSnapShots(newSnapShots)
   setSnapShotsID(snapShotID)
 }

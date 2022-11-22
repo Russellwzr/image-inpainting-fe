@@ -1,6 +1,15 @@
 import React, { useCallback, useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEraser, faDownload, faEye, faUpload, faShare, faReply } from '@fortawesome/free-solid-svg-icons'
+import {
+  faEraser,
+  faDownload,
+  faEye,
+  faUpload,
+  faShare,
+  faReply,
+  faDrawPolygon,
+  faHand,
+} from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider } from 'antd'
 import { FabricContext } from './ImageEditor'
@@ -101,24 +110,28 @@ const ToolBar = () => {
               }}
             />
           </div>
-          <ToolButton icon={faEye} />
-          <button onClick={() => viewReset(drawCanvas.current)}>View Reset</button>
-          <button
-            onClick={() =>
-              drawType === DRAW_TYPE.LASSO_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.LASSO_DRAW)
-            }
-          >
-            Lasso
-          </button>
-          <button
+          <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} />
+          <ToolButton
+            isActive={drawType === DRAW_TYPE.LASSO_DRAW}
+            onClick={() => {
+              if (drawType === DRAW_TYPE.LASSO_DRAW) {
+                setDrawType(DRAW_TYPE.NORMAL)
+              } else {
+                setDrawType(DRAW_TYPE.LASSO_DRAW)
+                setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
+              }
+            }}
+            icon={faDrawPolygon}
+          />
+          <ToolButton
+            isActive={drawType === DRAW_TYPE.LASSO_DRAG_POINTS}
             onClick={() =>
               drawType === DRAW_TYPE.LASSO_DRAG_POINTS
                 ? setDrawType(DRAW_TYPE.NORMAL)
                 : setDrawType(DRAW_TYPE.LASSO_DRAG_POINTS)
             }
-          >
-            Lasso Drag
-          </button>
+            icon={faHand}
+          />
         </div>
       </div>
     </div>
