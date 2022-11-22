@@ -118,7 +118,7 @@ const drawControlPoints = (drawCanvas, lassos, curIndex) => {
       top: lassos[curIndex][i].y - RADIUS,
       left: lassos[curIndex][i].x - RADIUS,
       radius: RADIUS,
-      fill: 'red',
+      fill: '#38bdf8',
       selectable: false,
       lassoIndex: curIndex,
       elementType: CIRCLE_TYPE,

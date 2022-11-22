@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <StyledFooter>
       <p className="title">Image Inpainting</p>
-      <p className="author">Created by React & Konva & TailwindCSS</p>
+      <p className="author">Created by React & Fabric & TailwindCSS</p>
     </StyledFooter>
   )
 }

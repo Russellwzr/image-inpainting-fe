@@ -69,10 +69,17 @@ const ToolBar = () => {
             hasImage ? `flex` : `hidden`
           }`}
         >
-          <InputButton tailWindStyle={`hover:bg-gray-100 px-2 py-1 rounded-lg`} onChange={handleUpload}>
+          <InputButton
+            disabledPopConfirm={false}
+            tailWindStyle={`hover:bg-gray-100 px-2 py-1 rounded-lg`}
+            title="upload"
+            onChange={handleUpload}
+          >
             <FontAwesomeIcon icon={faUpload} />
           </InputButton>
-          <ToolButton onClick={handleDownload} icon={faDownload} />
+
+          <ToolButton onClick={handleDownload} icon={faDownload} title="download" />
+
           <ToolButton
             onClick={() => {
               if (!canUndo(snapShotsID)) return
@@ -80,8 +87,10 @@ const ToolBar = () => {
               restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
             }}
             icon={faReply}
+            title="undo"
             disabled={!canUndo(snapShotsID)}
           />
+
           <ToolButton
             onClick={() => {
               if (!canRedo(snapShots, snapShotsID)) return
@@ -89,18 +98,24 @@ const ToolBar = () => {
               restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
             }}
             icon={faShare}
+            title="redo"
             disabled={!canRedo(snapShots, snapShotsID)}
           />
+
+          <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} title="view reset" />
+
           <ToolButton
             isActive={drawType === DRAW_TYPE.FREE_DRAW}
             onClick={() =>
               drawType === DRAW_TYPE.FREE_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.FREE_DRAW)
             }
             icon={faEraser}
+            title="eraser"
           />
+
           <div style={{ width: 100 }}>
             <Slider
-              tooltip={(value) => value}
+              tooltip={{ placement: 'bottom' }}
               defaultValue={10}
               max={30}
               min={5}
@@ -110,7 +125,7 @@ const ToolBar = () => {
               }}
             />
           </div>
-          <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} />
+
           <ToolButton
             isActive={drawType === DRAW_TYPE.LASSO_DRAW}
             onClick={() => {
@@ -122,7 +137,9 @@ const ToolBar = () => {
               }
             }}
             icon={faDrawPolygon}
+            title="lasso drawing"
           />
+
           <ToolButton
             isActive={drawType === DRAW_TYPE.LASSO_DRAG_POINTS}
             onClick={() =>
@@ -131,6 +148,7 @@ const ToolBar = () => {
                 : setDrawType(DRAW_TYPE.LASSO_DRAG_POINTS)
             }
             icon={faHand}
+            title="lasso dragging"
           />
         </div>
       </div>
