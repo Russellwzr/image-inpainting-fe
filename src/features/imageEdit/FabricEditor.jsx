@@ -1,5 +1,7 @@
 import { fabric } from 'fabric'
 import React, { useRef, useContext, useEffect, useCallback } from 'react'
+import { Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 import { FabricContext } from './ImageEditor'
 import { DRAW_TYPE } from './constant'
 import { zoomInAndOut, panMouseDown, panMouseMove, panMouseUp } from './fabricFunc/zoomAndPan'
@@ -12,13 +14,12 @@ import {
   drawAllControlPoints,
   updateFabricCanvas,
 } from './fabricFunc/lassoInteraction'
-
 import { getCurState, storeSnapShots } from './fabricFunc/fabricSnapShots'
+import './spinStyle.css'
 
 const FabricEditor = () => {
   const {
     drawCanvas,
-    imageCanvas,
     drawType,
     penWidth,
     hasImage,
@@ -30,6 +31,7 @@ const FabricEditor = () => {
     setSnapShots,
     snapShotsID,
     setSnapShotsID,
+    isLoading,
   } = useContext(FabricContext)
 
   const isPanning = useRef(false) // panning flag
@@ -193,11 +195,14 @@ const FabricEditor = () => {
   return (
     <div className="flex justify-center mt-10">
       <div className={`${hasImage ? `flex` : `hidden`}`}>
-        <canvas
-          ref={imageCanvas}
-          id="image-container"
-          className="border-gray-300 border-2 rounded-xl border-dashed"
-        ></canvas>
+        <Spin
+          spinning={isLoading}
+          tip={<span className="mt-8 text-2xl">Processing...</span>}
+          size="large"
+          indicator={<LoadingOutlined className="text-5xl" spin />}
+        >
+          <canvas id="image-container" className="border-gray-300 border-2 rounded-xl border-dashed"></canvas>
+        </Spin>
       </div>
     </div>
   )

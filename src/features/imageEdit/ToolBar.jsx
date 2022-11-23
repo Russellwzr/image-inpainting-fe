@@ -1,4 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React, { useCallback, useContext } from 'react'
+import { fabric } from 'fabric'
+import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faEraser,
@@ -12,10 +15,10 @@ import {
   faRotate,
 } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
-import { Slider } from 'antd'
+import { Slider, message } from 'antd'
 import { FabricContext } from './ImageEditor'
-import { DRAW_TYPE } from './constant'
-import { handleImageUpload, handleImageDownload } from './fabricFunc/imageTransport'
+import { DRAW_TYPE, server_url } from './constant'
+import { handleImageUpload, handleImageDownload, getInpaintFormData } from './fabricFunc/imageTransport'
 import { viewReset } from './fabricFunc/zoomAndPan'
 import { undoCommand, redoCommand, restoreSnapShot, canUndo, canRedo } from './fabricFunc/fabricSnapShots'
 import InputButton from './InputButton'
@@ -24,7 +27,10 @@ import ToolButton from './ToolButton'
 const ToolBar = () => {
   const {
     drawCanvas,
-    imageCanvas,
+    originImage,
+    setOriginImage,
+    inpaintImage,
+    setInpaintImage,
     drawType,
     setDrawType,
     penWidth,
@@ -37,18 +43,19 @@ const ToolBar = () => {
     setSnapShots,
     snapShotsID,
     setSnapShotsID,
+    setIsLoading,
   } = useContext(FabricContext)
 
   const handleUpload = useCallback(
     (e) => {
-      handleImageUpload(e, drawCanvas, imageCanvas, setHasImage)
+      handleImageUpload(e, drawCanvas.current, setOriginImage, setHasImage)
     },
-    [drawCanvas, imageCanvas, setHasImage],
+    [drawCanvas, setHasImage, setOriginImage],
   )
 
   const handleDownload = useCallback(() => {
-    handleImageDownload(drawCanvas)
-  }, [drawCanvas])
+    handleImageDownload(inpaintImage)
+  }, [inpaintImage])
 
   const clearCanvas = useCallback(() => {
     const fabricObjects = drawCanvas.current.getObjects()
@@ -63,6 +70,26 @@ const ToolBar = () => {
     ])
     setSnapShotsID(0)
   }, [drawCanvas, setActiveIndex, setDrawType, setLassos, setSnapShots, setSnapShotsID])
+
+  const handleInpaint = useCallback(() => {
+    const formData = getInpaintFormData(drawCanvas.current, originImage)
+    setIsLoading(true)
+    axios
+      .post(server_url + '/inpaint', formData)
+      .then((res) => {
+        const inpaintUrl = res.data.image_url
+        fabric.Image.fromURL(inpaintUrl, (img) => {
+          drawCanvas.current.setBackgroundImage(img, drawCanvas.current.renderAll.bind(drawCanvas.current))
+          setInpaintImage(img)
+        })
+        message.success('success')
+        setIsLoading(false)
+      })
+      .catch((err) => {
+        message.error(err)
+        setIsLoading(false)
+      })
+  }, [drawCanvas, originImage, setInpaintImage, setIsLoading])
 
   return (
     <div className="flex justify-center">
@@ -168,6 +195,8 @@ const ToolBar = () => {
             icon={faHand}
             title="lasso dragging"
           />
+
+          <button onClick={handleInpaint}>Inpaint</button>
         </div>
       </div>
     </div>

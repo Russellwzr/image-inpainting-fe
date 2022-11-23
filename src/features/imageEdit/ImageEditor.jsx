@@ -6,7 +6,8 @@ export const FabricContext = React.createContext()
 
 const ImageEditor = () => {
   const drawCanvas = useRef(null)
-  const imageCanvas = useRef(null)
+  const [originImage, setOriginImage] = useState(null)
+  const [inpaintImage, setInpaintImage] = useState(null)
   const [lassos, setLassos] = useState([]) // polygon control points
   const [activeIndex, setActiveIndex] = useState({ lassoIndex: -1, pointIndex: -1 }) // current polygon element index
   const [hasImage, setHasImage] = useState(false)
@@ -17,11 +18,15 @@ const ImageEditor = () => {
     { lassos: [], activeIndex: { lassoIndex: -1, pointIndex: -1 }, freeDraw: [], drawType: DRAW_TYPE.NORMAL },
   ])
   const [snapShotsID, setSnapShotsID] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
   return (
     <FabricContext.Provider
       value={{
         drawCanvas,
-        imageCanvas,
+        originImage,
+        setOriginImage,
+        inpaintImage,
+        setInpaintImage,
         drawType,
         setDrawType,
         penWidth,
@@ -36,6 +41,8 @@ const ImageEditor = () => {
         setSnapShots,
         snapShotsID,
         setSnapShotsID,
+        isLoading,
+        setIsLoading,
       }}
     >
       <FabricEditor />

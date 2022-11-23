@@ -1,0 +1,11 @@
+.ant-spin-nested-loading > div > .ant-spin {
+  max-height: 100% !important;
+}
+
+.ant-spin-nested-loading > div > .ant-spin .ant-spin-dot {
+  top: 45% !important;
+}
+
+.ant-spin-text {
+  margin-top: 16px !important;
+}
