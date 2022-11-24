@@ -22,7 +22,7 @@ const FabricEditor = () => {
     drawCanvas,
     drawType,
     penWidth,
-    hasImage,
+    originImage,
     lassos,
     setLassos,
     activeIndex,
@@ -179,6 +179,11 @@ const FabricEditor = () => {
     drawCanvas.current.freeDrawingBrush.width = penWidth
   }, [drawCanvas, penWidth])
 
+  useEffect(() => {
+    if (originImage === null) return
+    drawCanvas.current.setBackgroundImage(originImage, drawCanvas.current.renderAll.bind(drawCanvas.current))
+  }, [drawCanvas, originImage])
+
   // draw control points for LASSO_DRAG_POINTS
   useEffect(() => {
     if (drawType === DRAW_TYPE.LASSO_DRAG_POINTS) {
@@ -194,7 +199,7 @@ const FabricEditor = () => {
 
   return (
     <div className="flex justify-center mt-10">
-      <div className={`${hasImage ? `flex` : `hidden`}`}>
+      <div className={`${originImage === null ? `hidden` : `flex`}`}>
         <Spin
           spinning={isLoading}
           tip={<span className="mt-8 text-2xl">Processing...</span>}

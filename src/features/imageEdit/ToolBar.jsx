@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { fabric } from 'fabric'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -13,14 +12,22 @@ import {
   faDrawPolygon,
   faHand,
   faRotate,
+  faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider, message } from 'antd'
 import { FabricContext } from './ImageEditor'
-import { DRAW_TYPE, server_url } from './constant'
-import { handleImageUpload, handleImageDownload, getInpaintFormData } from './fabricFunc/imageTransport'
+import { DRAW_TYPE, originSnapShot, inpaintAPI } from './constant'
+import {
+  handleImageUpload,
+  handleImageDownload,
+  getInpaintFormData,
+  //downloadMask,
+  //downloadOrigin,
+} from './fabricFunc/imageTransport'
 import { viewReset } from './fabricFunc/zoomAndPan'
 import { undoCommand, redoCommand, restoreSnapShot, canUndo, canRedo } from './fabricFunc/fabricSnapShots'
+import { storeInpaintSnapShots, backToPreviousInpaint, canBack } from './fabricFunc/inpaintSnapShots'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
 
@@ -29,33 +36,22 @@ const ToolBar = () => {
     drawCanvas,
     originImage,
     setOriginImage,
-    inpaintImage,
-    setInpaintImage,
     drawType,
     setDrawType,
     penWidth,
     setPenWidth,
-    hasImage,
-    setHasImage,
     setLassos,
     setActiveIndex,
     snapShots,
     setSnapShots,
     snapShotsID,
     setSnapShotsID,
+    inpaintSnapShots,
+    setInpaintSnapShots,
+    inpaintSnapShotsID,
+    setInpaintSnapShotsID,
     setIsLoading,
   } = useContext(FabricContext)
-
-  const handleUpload = useCallback(
-    (e) => {
-      handleImageUpload(e, drawCanvas.current, setOriginImage, setHasImage)
-    },
-    [drawCanvas, setHasImage, setOriginImage],
-  )
-
-  const handleDownload = useCallback(() => {
-    handleImageDownload(inpaintImage)
-  }, [inpaintImage])
 
   const clearCanvas = useCallback(() => {
     const fabricObjects = drawCanvas.current.getObjects()
@@ -65,22 +61,44 @@ const ToolBar = () => {
     setLassos([])
     setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
     setDrawType(DRAW_TYPE.NORMAL)
-    setSnapShots([
-      { lassos: [], activeIndex: { lassoIndex: -1, pointIndex: -1 }, freeDraw: [], drawType: DRAW_TYPE.NORMAL },
-    ])
+    setSnapShots(originSnapShot)
     setSnapShotsID(0)
   }, [drawCanvas, setActiveIndex, setDrawType, setLassos, setSnapShots, setSnapShotsID])
+
+  const handleUpload = useCallback(
+    (e) => {
+      clearCanvas()
+      setInpaintSnapShots(null)
+      setInpaintSnapShotsID(-1)
+      handleImageUpload(e, drawCanvas.current, setOriginImage)
+    },
+    [clearCanvas, drawCanvas, setInpaintSnapShots, setInpaintSnapShotsID, setOriginImage],
+  )
+
+  const handleDownload = useCallback(() => {
+    handleImageDownload(originImage)
+    //downloadMask(drawCanvas.current)
+    //downloadOrigin(originImage)
+  }, [originImage])
 
   const handleInpaint = useCallback(() => {
     const formData = getInpaintFormData(drawCanvas.current, originImage)
     setIsLoading(true)
     axios
-      .post(server_url + '/inpaint', formData)
+      .post(inpaintAPI, formData)
       .then((res) => {
         const inpaintUrl = res.data.image_url
         fabric.Image.fromURL(inpaintUrl, (img) => {
-          drawCanvas.current.setBackgroundImage(img, drawCanvas.current.renderAll.bind(drawCanvas.current))
-          setInpaintImage(img)
+          storeInpaintSnapShots(
+            originImage,
+            snapShots,
+            snapShotsID,
+            inpaintSnapShots,
+            inpaintSnapShotsID,
+            setInpaintSnapShots,
+            setInpaintSnapShotsID,
+          )
+          setOriginImage(img)
         })
         message.success('success')
         setIsLoading(false)
@@ -89,13 +107,75 @@ const ToolBar = () => {
         message.error(err)
         setIsLoading(false)
       })
-  }, [drawCanvas, originImage, setInpaintImage, setIsLoading])
+  }, [
+    drawCanvas,
+    inpaintSnapShots,
+    inpaintSnapShotsID,
+    originImage,
+    setInpaintSnapShots,
+    setInpaintSnapShotsID,
+    setIsLoading,
+    setOriginImage,
+    snapShots,
+    snapShotsID,
+  ])
+
+  const undoDisabled = useMemo(() => {
+    return !canUndo(snapShotsID)
+  }, [snapShotsID])
+
+  const executeUndo = useCallback(() => {
+    if (undoDisabled) return
+    const curState = undoCommand(snapShots, snapShotsID, setSnapShotsID)
+    restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
+  }, [drawCanvas, setActiveIndex, setDrawType, setLassos, setSnapShotsID, snapShots, snapShotsID, undoDisabled])
+
+  const redoDisabled = useMemo(() => {
+    return !canRedo(snapShots, snapShotsID)
+  }, [snapShots, snapShotsID])
+
+  const executeRedo = useCallback(() => {
+    if (redoDisabled) return
+    const curState = redoCommand(snapShots, snapShotsID, setSnapShotsID)
+    restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
+  }, [drawCanvas, redoDisabled, setActiveIndex, setDrawType, setLassos, setSnapShotsID, snapShots, snapShotsID])
+
+  const backDisabled = useMemo(() => {
+    return !canBack(inpaintSnapShotsID)
+  }, [inpaintSnapShotsID])
+
+  const executeInpaintBack = useCallback(() => {
+    if (backDisabled) return
+    const curState = backToPreviousInpaint(inpaintSnapShots, inpaintSnapShotsID, setInpaintSnapShotsID)
+    setOriginImage(curState.originImage)
+    setSnapShots(curState.snapShots)
+    setSnapShotsID(curState.snapShotsID)
+    restoreSnapShot(
+      curState.snapShots[curState.snapShotsID],
+      drawCanvas.current,
+      setLassos,
+      setActiveIndex,
+      setDrawType,
+    )
+  }, [
+    backDisabled,
+    drawCanvas,
+    inpaintSnapShots,
+    inpaintSnapShotsID,
+    setActiveIndex,
+    setDrawType,
+    setInpaintSnapShotsID,
+    setLassos,
+    setOriginImage,
+    setSnapShots,
+    setSnapShotsID,
+  ])
 
   return (
     <div className="flex justify-center">
       <div>
         {/* Upload Image Box */}
-        <div className={`mb-16 ${!hasImage ? `block` : `hidden`}`}>
+        <div className={`mb-16 ${originImage === null ? `block` : `hidden`}`}>
           <InputButton
             onChange={handleUpload}
             tailWindStyle={`hover:bg-gray-200 border-gray-300 border-2 rounded-xl border-dashed bg-gray-100`}
@@ -109,7 +189,7 @@ const ToolBar = () => {
         {/* Tool Bar */}
         <div
           className={`mt-8 px-6 py-1 space-x-4 border-gray-300 border-2 rounded-xl border-dashed ${
-            hasImage ? `flex` : `hidden`
+            originImage === null ? `hidden` : `flex`
           }`}
         >
           <InputButton
@@ -125,27 +205,9 @@ const ToolBar = () => {
 
           <ToolButton disabledPopConfirm={false} onClick={clearCanvas} icon={faRotate} title="clear" />
 
-          <ToolButton
-            onClick={() => {
-              if (!canUndo(snapShotsID)) return
-              const curState = undoCommand(snapShots, snapShotsID, setSnapShotsID)
-              restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
-            }}
-            icon={faReply}
-            title="undo"
-            disabled={!canUndo(snapShotsID)}
-          />
+          <ToolButton onClick={executeUndo} icon={faReply} title="undo" disabled={undoDisabled} />
 
-          <ToolButton
-            onClick={() => {
-              if (!canRedo(snapShots, snapShotsID)) return
-              const curState = redoCommand(snapShots, snapShotsID, setSnapShotsID)
-              restoreSnapShot(curState, drawCanvas.current, setLassos, setActiveIndex, setDrawType)
-            }}
-            icon={faShare}
-            title="redo"
-            disabled={!canRedo(snapShots, snapShotsID)}
-          />
+          <ToolButton onClick={executeRedo} icon={faShare} title="redo" disabled={redoDisabled} />
 
           <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} title="view reset" />
 
@@ -194,6 +256,13 @@ const ToolBar = () => {
             }
             icon={faHand}
             title="lasso dragging"
+          />
+
+          <ToolButton
+            onClick={executeInpaintBack}
+            icon={faArrowLeft}
+            title="back to previous image"
+            disabled={backDisabled}
           />
 
           <button onClick={handleInpaint}>Inpaint</button>

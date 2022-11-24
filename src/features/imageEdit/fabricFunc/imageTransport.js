@@ -1,7 +1,7 @@
 import { fabric } from 'fabric'
 import { MAX_HEIGHT, MAX_WIDTH } from '../constant'
 
-export const handleImageUpload = (e, drawCanvas, setOriginImage, setHasImage) => {
+export const handleImageUpload = (e, drawCanvas, setOriginImage) => {
   const file = e.target.files[0]
   if (!file) return
   const fileUrl = URL.createObjectURL(file)
@@ -14,18 +14,18 @@ export const handleImageUpload = (e, drawCanvas, setOriginImage, setHasImage) =>
 
     if (originWidth > MAX_WIDTH || originHeight > MAX_HEIGHT) {
       if (originWidth / originHeight > MAX_WIDTH / MAX_HEIGHT) {
+        img.scaleToWidth(MAX_WIDTH)
         targetWidth = MAX_WIDTH
-        targetHeight = Math.round(MAX_WIDTH * (originHeight / originWidth))
+        targetHeight = Math.round(img.height * img.scaleY)
       } else {
+        img.scaleToHeight(MAX_HEIGHT)
         targetHeight = MAX_HEIGHT
-        targetWidth = Math.round(MAX_HEIGHT * (originWidth / originHeight))
+        targetWidth = Math.round(img.width * img.scaleX)
       }
     }
-    img.scale(Math.max(targetWidth / originWidth, targetHeight / originHeight))
+
     drawCanvas.setWidth(targetWidth)
     drawCanvas.setHeight(targetHeight)
-    drawCanvas.setBackgroundImage(img, drawCanvas.renderAll.bind(drawCanvas))
-    setHasImage(true)
     setOriginImage(img)
   })
 }
@@ -59,6 +59,24 @@ export const handleImageDownload = (inpaintImage) => {
   let b = document.createElement('a')
   b.download = 'inpaint.jpg'
   b.href = inpaintUrl
+  b.dispatchEvent(e)
+}
+
+export const downloadMask = (drawCanvas) => {
+  const maskUrl = getMaskUrl(drawCanvas)
+  const e = new MouseEvent('click')
+  let b = document.createElement('a')
+  b.download = 'mask.jpg'
+  b.href = maskUrl
+  b.dispatchEvent(e)
+}
+
+export const downloadOrigin = (originImage) => {
+  const originUrl = originImage.toDataURL({ format: 'image/jpeg' })
+  const e = new MouseEvent('click')
+  let b = document.createElement('a')
+  b.download = 'origin.jpg'
+  b.href = originUrl
   b.dispatchEvent(e)
 }
 
