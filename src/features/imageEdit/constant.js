@@ -12,5 +12,3 @@ export const MAX_HEIGHT = 600
 export const originSnapShot = [
   { lassos: [], activeIndex: { lassoIndex: -1, pointIndex: -1 }, freeDraw: [], drawType: DRAW_TYPE.NORMAL },
 ]
-
-export const inpaintAPI = 'http://127.0.0.1:5003/inpaint'

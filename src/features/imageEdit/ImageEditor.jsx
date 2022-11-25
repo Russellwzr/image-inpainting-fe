@@ -17,9 +17,10 @@ const ImageEditor = () => {
   const [snapShots, setSnapShots] = useState(originSnapShot) // fabric snapshots for current inpaint
   const [snapShotsID, setSnapShotsID] = useState(0)
   const [inpaintSnapShots, setInpaintSnapShots] = useState(null) // snapshots for each inpaint
-  const [inpaintSnapShotsID, setInpaintSnapShotsID] = useState(-1)
+  const [inpaintSnapShotsID, setInpaintSnapShotsID] = useState(0)
 
   const [isLoading, setIsLoading] = useState(false) // inpaint process
+  const [showOriginImage, setShowOriginImage] = useState(false)
   return (
     <FabricContext.Provider
       value={{
@@ -44,6 +45,8 @@ const ImageEditor = () => {
         setInpaintSnapShotsID,
         isLoading,
         setIsLoading,
+        showOriginImage,
+        setShowOriginImage,
       }}
     >
       <FabricEditor />

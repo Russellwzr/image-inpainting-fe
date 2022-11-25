@@ -13,23 +13,28 @@ import {
   faHand,
   faRotate,
   faArrowLeft,
+  faArrowRight,
+  faCodeCompare,
 } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider, message } from 'antd'
 import { FabricContext } from './ImageEditor'
-import { DRAW_TYPE, originSnapShot, inpaintAPI } from './constant'
-import {
-  handleImageUpload,
-  handleImageDownload,
-  getInpaintFormData,
-  //downloadMask,
-  //downloadOrigin,
-} from './fabricFunc/imageTransport'
+import { DRAW_TYPE, originSnapShot } from './constant'
+import { handleImageUpload, handleImageDownload, getInpaintFormData } from './fabricFunc/imageTransport'
 import { viewReset } from './fabricFunc/zoomAndPan'
-import { undoCommand, redoCommand, restoreSnapShot, canUndo, canRedo } from './fabricFunc/fabricSnapShots'
-import { storeInpaintSnapShots, backToPreviousInpaint, canBack } from './fabricFunc/inpaintSnapShots'
+import {
+  undoCommand,
+  redoCommand,
+  restoreSnapShot,
+  canUndo,
+  canRedo,
+  storeInpaintSnapShots,
+  restoreInpaintSnapShot,
+} from './fabricFunc/fabricSnapShots'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
+
+export const inpaintAPI = 'http://127.0.0.1:5003/inpaint'
 
 const ToolBar = () => {
   const {
@@ -51,6 +56,7 @@ const ToolBar = () => {
     inpaintSnapShotsID,
     setInpaintSnapShotsID,
     setIsLoading,
+    setShowOriginImage,
   } = useContext(FabricContext)
 
   const clearCanvas = useCallback(() => {
@@ -69,16 +75,14 @@ const ToolBar = () => {
     (e) => {
       clearCanvas()
       setInpaintSnapShots(null)
-      setInpaintSnapShotsID(-1)
-      handleImageUpload(e, drawCanvas.current, setOriginImage)
+      setInpaintSnapShotsID(0)
+      handleImageUpload(e, drawCanvas.current, setOriginImage, setInpaintSnapShots)
     },
     [clearCanvas, drawCanvas, setInpaintSnapShots, setInpaintSnapShotsID, setOriginImage],
   )
 
   const handleDownload = useCallback(() => {
     handleImageDownload(originImage)
-    //downloadMask(drawCanvas.current)
-    //downloadOrigin(originImage)
   }, [originImage])
 
   const handleInpaint = useCallback(() => {
@@ -87,27 +91,30 @@ const ToolBar = () => {
     axios
       .post(inpaintAPI, formData)
       .then((res) => {
-        const inpaintUrl = res.data.image_url
-        fabric.Image.fromURL(inpaintUrl, (img) => {
+        const inpaintImage = new Image()
+        inpaintImage.crossOrigin = 'Anonymous'
+        inpaintImage.src = res.data.image_url
+        inpaintImage.onload = () => {
+          const newImage = new fabric.Image(inpaintImage)
+          clearCanvas()
           storeInpaintSnapShots(
-            originImage,
-            snapShots,
-            snapShotsID,
+            newImage,
             inpaintSnapShots,
             inpaintSnapShotsID,
             setInpaintSnapShots,
             setInpaintSnapShotsID,
           )
-          setOriginImage(img)
-        })
-        message.success('success')
-        setIsLoading(false)
+          setOriginImage(newImage)
+          message.success('success')
+          setIsLoading(false)
+        }
       })
       .catch((err) => {
         message.error(err)
         setIsLoading(false)
       })
   }, [
+    clearCanvas,
     drawCanvas,
     inpaintSnapShots,
     inpaintSnapShotsID,
@@ -116,8 +123,6 @@ const ToolBar = () => {
     setInpaintSnapShotsID,
     setIsLoading,
     setOriginImage,
-    snapShots,
-    snapShotsID,
   ])
 
   const undoDisabled = useMemo(() => {
@@ -141,35 +146,24 @@ const ToolBar = () => {
   }, [drawCanvas, redoDisabled, setActiveIndex, setDrawType, setLassos, setSnapShotsID, snapShots, snapShotsID])
 
   const backDisabled = useMemo(() => {
-    return !canBack(inpaintSnapShotsID)
+    return !canUndo(inpaintSnapShotsID)
   }, [inpaintSnapShotsID])
 
   const executeInpaintBack = useCallback(() => {
     if (backDisabled) return
-    const curState = backToPreviousInpaint(inpaintSnapShots, inpaintSnapShotsID, setInpaintSnapShotsID)
-    setOriginImage(curState.originImage)
-    setSnapShots(curState.snapShots)
-    setSnapShotsID(curState.snapShotsID)
-    restoreSnapShot(
-      curState.snapShots[curState.snapShotsID],
-      drawCanvas.current,
-      setLassos,
-      setActiveIndex,
-      setDrawType,
-    )
-  }, [
-    backDisabled,
-    drawCanvas,
-    inpaintSnapShots,
-    inpaintSnapShotsID,
-    setActiveIndex,
-    setDrawType,
-    setInpaintSnapShotsID,
-    setLassos,
-    setOriginImage,
-    setSnapShots,
-    setSnapShotsID,
-  ])
+    const curState = undoCommand(inpaintSnapShots, inpaintSnapShotsID, setInpaintSnapShotsID)
+    restoreInpaintSnapShot(curState, setOriginImage)
+  }, [backDisabled, inpaintSnapShots, inpaintSnapShotsID, setInpaintSnapShotsID, setOriginImage])
+
+  const forwardDisabled = useMemo(() => {
+    return !canRedo(inpaintSnapShots, inpaintSnapShotsID)
+  }, [inpaintSnapShots, inpaintSnapShotsID])
+
+  const executeInpaintForward = useCallback(() => {
+    if (forwardDisabled) return
+    const curState = redoCommand(inpaintSnapShots, inpaintSnapShotsID, setInpaintSnapShotsID)
+    restoreInpaintSnapShot(curState, setOriginImage)
+  }, [forwardDisabled, inpaintSnapShots, inpaintSnapShotsID, setInpaintSnapShotsID, setOriginImage])
 
   return (
     <div className="flex justify-center">
@@ -258,10 +252,24 @@ const ToolBar = () => {
             title="lasso dragging"
           />
 
+          <ToolButton onClick={executeInpaintBack} icon={faArrowLeft} title="image back" disabled={backDisabled} />
+
           <ToolButton
-            onClick={executeInpaintBack}
-            icon={faArrowLeft}
-            title="back to previous image"
+            onClick={executeInpaintForward}
+            icon={faArrowRight}
+            title="image forward"
+            disabled={forwardDisabled}
+          />
+
+          <ToolButton
+            onMouseDown={() => {
+              setShowOriginImage(true)
+            }}
+            onMouseUp={() => {
+              setShowOriginImage(false)
+            }}
+            icon={faCodeCompare}
+            title="image comparision"
             disabled={backDisabled}
           />
 

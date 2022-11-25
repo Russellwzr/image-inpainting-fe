@@ -1,9 +1,18 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useRef } from 'react'
 import { Tooltip, Popconfirm } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-// eslint-disable-next-line react/prop-types
-const ToolButton = ({ isActive, onClick, icon, title = '', disabledPopConfirm = true, disabled = false }) => {
+const ToolButton = ({
+  isActive,
+  onClick = null,
+  onMouseDown = null,
+  onMouseUp = null,
+  icon,
+  title = '',
+  disabledPopConfirm = true,
+  disabled = false,
+}) => {
   const buttonRef = useRef(null)
   useEffect(() => {
     buttonRef.current.disabled = disabled
@@ -26,8 +35,16 @@ const ToolButton = ({ isActive, onClick, icon, title = '', disabledPopConfirm = 
               isActive ? `bg-sky-200` : `bg-transparent`
             }`}
             onClick={() => {
-              if (!disabledPopConfirm) return
+              if (!disabledPopConfirm || onClick === null) return
               onClick()
+            }}
+            onMouseDown={() => {
+              if (!disabledPopConfirm || onMouseDown === null) return
+              onMouseDown()
+            }}
+            onMouseUp={() => {
+              if (!disabledPopConfirm || onMouseUp === null) return
+              onMouseUp()
             }}
           >
             <FontAwesomeIcon className={`${disabled ? `text-gray-300` : ``}`} icon={icon} />

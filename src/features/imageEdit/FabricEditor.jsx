@@ -15,7 +15,7 @@ import {
   updateFabricCanvas,
 } from './fabricFunc/lassoInteraction'
 import { getCurState, storeSnapShots } from './fabricFunc/fabricSnapShots'
-import './spinStyle.css'
+import './style.css'
 
 const FabricEditor = () => {
   const {
@@ -32,6 +32,9 @@ const FabricEditor = () => {
     snapShotsID,
     setSnapShotsID,
     isLoading,
+    showOriginImage,
+    inpaintSnapShots,
+    inpaintSnapShotsID,
   } = useContext(FabricContext)
 
   const isPanning = useRef(false) // panning flag
@@ -130,7 +133,7 @@ const FabricEditor = () => {
     drawCanvas.current = new fabric.Canvas('image-container')
     drawCanvas.current.selection = false
     drawCanvas.current.skipTargetFind = true
-    drawCanvas.current.freeDrawingBrush.color = 'white'
+    drawCanvas.current.freeDrawingBrush.color = 'rgba(255, 255, 255, 0.9)'
     drawCanvas.current.freeDrawingBrush.limitedToCanvasSize = true
     return () => {
       drawCanvas.current.dispose()
@@ -199,14 +202,27 @@ const FabricEditor = () => {
 
   return (
     <div className="flex justify-center mt-10">
-      <div className={`${originImage === null ? `hidden` : `flex`}`}>
+      <div
+        className={`${
+          originImage === null ? `hidden` : `flex`
+        } border-gray-300 border-2 rounded-xl border-dashed relative`}
+      >
+        <div className={`${showOriginImage ? `max-h-full` : `max-h-0`} origin-img-box rounded-xl`}>
+          <img
+            src={
+              inpaintSnapShotsID > 0
+                ? inpaintSnapShots[inpaintSnapShotsID - 1].originImage.toDataURL({ format: 'image/jpeg' })
+                : null
+            }
+          />
+        </div>
         <Spin
           spinning={isLoading}
           tip={<span className="mt-8 text-2xl">Processing...</span>}
           size="large"
           indicator={<LoadingOutlined className="text-5xl" spin />}
         >
-          <canvas id="image-container" className="border-gray-300 border-2 rounded-xl border-dashed"></canvas>
+          <canvas id="image-container" className="rounded-xl"></canvas>
         </Spin>
       </div>
     </div>

@@ -9,3 +9,14 @@
 .ant-spin-text {
   margin-top: 16px !important;
 }
+
+.origin-img-box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  transition-property: max-height;
+  transition-duration: 0.4s;
+  transition-timing-function: linear;
+  z-index: 10;
+}

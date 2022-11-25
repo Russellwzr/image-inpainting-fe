@@ -1,6 +1,7 @@
 import _ from 'lodash'
 
 const MAX_SNAPSHOTS = 1000
+const MAX_INPAINT_SNAPSHOTS = 20
 
 export const getCurState = (fabricObjects, lassos, activeIndex, drawType) => {
   let freeDraw = []
@@ -33,6 +34,29 @@ export const storeSnapShots = (snapShots, snapShotID, curState, setSnapShots, se
   setSnapShotsID(snapShotID)
 }
 
+export const storeInpaintSnapShots = (
+  originImage,
+  inpaintSnapShots,
+  inpaintSnapShotsID,
+  setInpaintSnapShots,
+  setInpaintSnapShotsID,
+) => {
+  let newInpaintSnapShots = [...inpaintSnapShots]
+  while (inpaintSnapShotsID < newInpaintSnapShots.length - 1) {
+    newInpaintSnapShots.pop()
+  }
+  newInpaintSnapShots.push({
+    originImage: _.cloneDeep(originImage),
+  })
+  inpaintSnapShotsID += 1
+  if (newInpaintSnapShots.length > MAX_INPAINT_SNAPSHOTS) {
+    newInpaintSnapShots.shift()
+    inpaintSnapShotsID -= 1
+  }
+  setInpaintSnapShots(newInpaintSnapShots)
+  setInpaintSnapShotsID(inpaintSnapShotsID)
+}
+
 export const restoreSnapShot = (snapShot, drawCanvas, setLassos, setActiveIndex, setDrawType) => {
   const { lassos, activeIndex, freeDraw, drawType } = snapShot
   const fabricObjects = drawCanvas.getObjects()
@@ -45,6 +69,11 @@ export const restoreSnapShot = (snapShot, drawCanvas, setLassos, setActiveIndex,
   setLassos(lassos)
   setActiveIndex(activeIndex)
   setDrawType(drawType)
+}
+
+export const restoreInpaintSnapShot = (snapShot, setOriginImage) => {
+  const { originImage } = snapShot
+  setOriginImage(originImage)
 }
 
 export const undoCommand = (snapShots, snapShotID, setSnapShotsID) => {
@@ -64,5 +93,6 @@ export const canUndo = (snapShotID) => {
 }
 
 export const canRedo = (snapShots, snapShotID) => {
-  return snapShots.length > 0 && snapShotID < snapShots.length - 1
+  if (snapShots === null) return false
+  return snapShots?.length > 0 && snapShotID < snapShots?.length - 1
 }

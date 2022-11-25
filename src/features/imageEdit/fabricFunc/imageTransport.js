@@ -1,7 +1,7 @@
 import { fabric } from 'fabric'
 import { MAX_HEIGHT, MAX_WIDTH } from '../constant'
 
-export const handleImageUpload = (e, drawCanvas, setOriginImage) => {
+export const handleImageUpload = (e, drawCanvas, setOriginImage, setInpaintSnapShots) => {
   const file = e.target.files[0]
   if (!file) return
   const fileUrl = URL.createObjectURL(file)
@@ -27,10 +27,10 @@ export const handleImageUpload = (e, drawCanvas, setOriginImage) => {
     drawCanvas.setWidth(targetWidth)
     drawCanvas.setHeight(targetHeight)
     setOriginImage(img)
+    setInpaintSnapShots([{ originImage: img }])
   })
 }
 
-// eslint-disable-next-line no-unused-vars
 const dataURLToBlob = (dataurl) => {
   let arr = dataurl.split(','),
     mime = arr[0].match(/:(.*?);/)[1],
@@ -59,24 +59,6 @@ export const handleImageDownload = (inpaintImage) => {
   let b = document.createElement('a')
   b.download = 'inpaint.jpg'
   b.href = inpaintUrl
-  b.dispatchEvent(e)
-}
-
-export const downloadMask = (drawCanvas) => {
-  const maskUrl = getMaskUrl(drawCanvas)
-  const e = new MouseEvent('click')
-  let b = document.createElement('a')
-  b.download = 'mask.jpg'
-  b.href = maskUrl
-  b.dispatchEvent(e)
-}
-
-export const downloadOrigin = (originImage) => {
-  const originUrl = originImage.toDataURL({ format: 'image/jpeg' })
-  const e = new MouseEvent('click')
-  let b = document.createElement('a')
-  b.download = 'origin.jpg'
-  b.href = originUrl
   b.dispatchEvent(e)
 }
 

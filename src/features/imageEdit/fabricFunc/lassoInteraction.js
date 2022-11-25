@@ -118,7 +118,7 @@ const drawControlPoints = (drawCanvas, lassos, curIndex) => {
       top: lassos[curIndex][i].y - RADIUS,
       left: lassos[curIndex][i].x - RADIUS,
       radius: RADIUS,
-      fill: '#38bdf8',
+      fill: 'rgba(56, 189, 248, 0.9)',
       selectable: false,
       lassoIndex: curIndex,
       elementType: CIRCLE_TYPE,
@@ -134,7 +134,7 @@ const drawContour = (drawCanvas, lassos, curIndex) => {
   const newPoints = calCurve(pointsObjToArray(points))
   const curvePoints = pointsArrayToObj(newPoints)
   const polygon = new fabric.Polyline(curvePoints, {
-    fill: 'white',
+    fill: 'rgba(255, 255, 255, 0.9)',
     selectable: false,
     lassoIndex: curIndex,
     elementType: POLYGON_TYPE,
