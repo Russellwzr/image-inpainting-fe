@@ -2,7 +2,7 @@ import { fabric } from 'fabric'
 import React, { useRef, useContext, useEffect, useCallback } from 'react'
 import { Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
-import { FabricContext } from './ImageEditor'
+import { FabricContext } from './EditPage'
 import { DRAW_TYPE } from './constant'
 import { zoomInAndOut, panMouseDown, panMouseMove, panMouseUp } from './fabricFunc/zoomAndPan'
 import {

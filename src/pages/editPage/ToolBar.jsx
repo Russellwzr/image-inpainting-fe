@@ -15,10 +15,11 @@ import {
   faArrowLeft,
   faArrowRight,
   faCodeCompare,
+  faWandMagicSparkles,
 } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider, message } from 'antd'
-import { FabricContext } from './ImageEditor'
+import { FabricContext } from './EditPage'
 import { DRAW_TYPE, originSnapShot } from './constant'
 import { handleImageUpload, handleImageDownload, getInpaintFormData } from './fabricFunc/imageTransport'
 import { viewReset } from './fabricFunc/zoomAndPan'
@@ -182,98 +183,112 @@ const ToolBar = () => {
         </div>
         {/* Tool Bar */}
         <div
-          className={`mt-8 px-6 py-1 space-x-4 border-gray-300 border-2 rounded-xl border-dashed ${
+          className={`mt-8 px-4 py-1 space-x-4 border-gray-300 border-2 rounded-xl border-dashed ${
             originImage === null ? `hidden` : `flex`
           }`}
         >
-          <InputButton
-            disabledPopConfirm={false}
-            tailWindStyle={`hover:bg-gray-100 px-2 py-1 rounded-lg`}
-            title="upload"
-            onChange={handleUpload}
-          >
-            <FontAwesomeIcon icon={faUpload} />
-          </InputButton>
+          <div className="flex space-x-2">
+            <InputButton
+              disabledPopConfirm={false}
+              tailWindStyle={`hover:bg-gray-100 px-2 py-1 rounded-lg`}
+              title="upload"
+              onChange={handleUpload}
+            >
+              <FontAwesomeIcon icon={faUpload} />
+            </InputButton>
+            <ToolButton onClick={handleDownload} icon={faDownload} title="download" />
+          </div>
 
-          <ToolButton onClick={handleDownload} icon={faDownload} title="download" />
+          <div className="flex space-x-2">
+            <ToolButton disabledPopConfirm={false} onClick={clearCanvas} icon={faRotate} title="clear" />
 
-          <ToolButton disabledPopConfirm={false} onClick={clearCanvas} icon={faRotate} title="clear" />
+            <ToolButton onClick={executeUndo} icon={faReply} title="undo" disabled={undoDisabled} />
 
-          <ToolButton onClick={executeUndo} icon={faReply} title="undo" disabled={undoDisabled} />
+            <ToolButton onClick={executeRedo} icon={faShare} title="redo" disabled={redoDisabled} />
+          </div>
 
-          <ToolButton onClick={executeRedo} icon={faShare} title="redo" disabled={redoDisabled} />
+          <div className="flex space-x-2">
+            <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} title="view reset" />
 
-          <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} title="view reset" />
+            <ToolButton
+              isActive={drawType === DRAW_TYPE.FREE_DRAW}
+              onClick={() =>
+                drawType === DRAW_TYPE.FREE_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.FREE_DRAW)
+              }
+              icon={faEraser}
+              title="eraser"
+            />
 
-          <ToolButton
-            isActive={drawType === DRAW_TYPE.FREE_DRAW}
-            onClick={() =>
-              drawType === DRAW_TYPE.FREE_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.FREE_DRAW)
-            }
-            icon={faEraser}
-            title="eraser"
-          />
+            <div style={{ width: 100 }}>
+              <Slider
+                tooltip={{ placement: 'bottom' }}
+                defaultValue={10}
+                max={30}
+                min={5}
+                value={penWidth}
+                onChange={(v) => {
+                  setPenWidth(v)
+                }}
+              />
+            </div>
 
-          <div style={{ width: 100 }}>
-            <Slider
-              tooltip={{ placement: 'bottom' }}
-              defaultValue={10}
-              max={30}
-              min={5}
-              value={penWidth}
-              onChange={(v) => {
-                setPenWidth(v)
+            <ToolButton
+              isActive={drawType === DRAW_TYPE.LASSO_DRAW}
+              onClick={() => {
+                if (drawType === DRAW_TYPE.LASSO_DRAW) {
+                  setDrawType(DRAW_TYPE.NORMAL)
+                } else {
+                  setDrawType(DRAW_TYPE.LASSO_DRAW)
+                  setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
+                }
               }}
+              icon={faDrawPolygon}
+              title="lasso drawing"
+            />
+
+            <ToolButton
+              isActive={drawType === DRAW_TYPE.LASSO_DRAG_POINTS}
+              onClick={() =>
+                drawType === DRAW_TYPE.LASSO_DRAG_POINTS
+                  ? setDrawType(DRAW_TYPE.NORMAL)
+                  : setDrawType(DRAW_TYPE.LASSO_DRAG_POINTS)
+              }
+              icon={faHand}
+              title="lasso dragging"
             />
           </div>
 
-          <ToolButton
-            isActive={drawType === DRAW_TYPE.LASSO_DRAW}
-            onClick={() => {
-              if (drawType === DRAW_TYPE.LASSO_DRAW) {
-                setDrawType(DRAW_TYPE.NORMAL)
-              } else {
-                setDrawType(DRAW_TYPE.LASSO_DRAW)
-                setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
-              }
-            }}
-            icon={faDrawPolygon}
-            title="lasso drawing"
-          />
+          <div className="flex space-x-2">
+            <ToolButton
+              onClick={executeInpaintBack}
+              icon={faArrowLeft}
+              title="image back"
+              disabled={backDisabled}
+              disabledPopConfirm={false}
+            />
 
-          <ToolButton
-            isActive={drawType === DRAW_TYPE.LASSO_DRAG_POINTS}
-            onClick={() =>
-              drawType === DRAW_TYPE.LASSO_DRAG_POINTS
-                ? setDrawType(DRAW_TYPE.NORMAL)
-                : setDrawType(DRAW_TYPE.LASSO_DRAG_POINTS)
-            }
-            icon={faHand}
-            title="lasso dragging"
-          />
+            <ToolButton
+              onClick={executeInpaintForward}
+              icon={faArrowRight}
+              title="image forward"
+              disabled={forwardDisabled}
+              disabledPopConfirm={false}
+            />
 
-          <ToolButton onClick={executeInpaintBack} icon={faArrowLeft} title="image back" disabled={backDisabled} />
+            <ToolButton
+              onMouseDown={() => {
+                setShowOriginImage(true)
+              }}
+              onMouseUp={() => {
+                setShowOriginImage(false)
+              }}
+              icon={faCodeCompare}
+              title="image comparision"
+              disabled={backDisabled}
+            />
 
-          <ToolButton
-            onClick={executeInpaintForward}
-            icon={faArrowRight}
-            title="image forward"
-            disabled={forwardDisabled}
-          />
-
-          <ToolButton
-            onMouseDown={() => {
-              setShowOriginImage(true)
-            }}
-            onMouseUp={() => {
-              setShowOriginImage(false)
-            }}
-            icon={faCodeCompare}
-            title="image comparision"
-            disabled={backDisabled}
-          />
-
-          <button onClick={handleInpaint}>Inpaint</button>
+            <ToolButton onClick={handleInpaint} icon={faWandMagicSparkles} title="inpaint" disabledPopConfirm={false} />
+          </div>
         </div>
       </div>
     </div>

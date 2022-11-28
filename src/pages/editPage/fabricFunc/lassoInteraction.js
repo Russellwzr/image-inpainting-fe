@@ -1,6 +1,6 @@
 import { fabric } from 'fabric'
 
-const RADIUS = 5
+const RADIUS = 2
 
 const CIRCLE_TYPE = 'lasso-circle'
 const POLYGON_TYPE = 'lasso-polygon'

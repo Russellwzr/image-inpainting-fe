@@ -5,7 +5,7 @@ import FabricEditor from './FabricEditor'
 
 export const FabricContext = React.createContext()
 
-const ImageEditor = () => {
+const EditPage = () => {
   const drawCanvas = useRef(null)
 
   const [originImage, setOriginImage] = useState(null) // background image
@@ -55,4 +55,4 @@ const ImageEditor = () => {
   )
 }
 
-export default ImageEditor
+export default EditPage

@@ -1,13 +1,24 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Layout } from './features/layout'
-import { ImageEditor } from './features/imageEdit'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Layout } from './common/layout'
+import { NotFoundPage } from './common/notFoundPage'
+import { HomePage } from './pages/homePage'
+import { EditPage } from './pages/editPage'
+import { ExamplesPage } from './pages/examplesPage'
 import './index.css'
 import 'antd/dist/antd.min.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
-  <Layout>
-    <ImageEditor />
-  </Layout>,
+  <BrowserRouter>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/edit" element={<EditPage />} />
+        <Route path="/examples" element={<ExamplesPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Layout>
+  </BrowserRouter>,
 )

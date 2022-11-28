@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { StyledNav, StyledHeader } from './styles'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons'
@@ -11,9 +12,9 @@ const Header = () => {
       </div>
 
       <StyledNav aria-label="Main Navigation">
-        <a href="/">home</a>
-        <a href="/edit">edit</a>
-        <a href="/examples">examples</a>
+        <Link to="/">home</Link>
+        <Link to="/edit">edit</Link>
+        <Link to="/examples">examples</Link>
       </StyledNav>
     </StyledHeader>
   )
