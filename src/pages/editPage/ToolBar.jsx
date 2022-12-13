@@ -16,12 +16,18 @@ import {
   faArrowRight,
   faCodeCompare,
   faWandMagicSparkles,
+  faGem,
 } from '@fortawesome/free-solid-svg-icons'
 import { FileImageOutlined } from '@ant-design/icons'
 import { Slider, message } from 'antd'
 import { FabricContext } from './EditPage'
 import { DRAW_TYPE, originSnapShot } from './constant'
-import { handleImageUpload, handleImageDownload, getInpaintFormData } from './fabricFunc/imageTransport'
+import {
+  handleImageUpload,
+  handleImageDownload,
+  getInpaintFormData,
+  getDeblurFormData,
+} from './fabricFunc/imageTransport'
 import { viewReset } from './fabricFunc/zoomAndPan'
 import {
   undoCommand,
@@ -34,8 +40,7 @@ import {
 } from './fabricFunc/fabricSnapShots'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
-
-export const inpaintAPI = 'http://127.0.0.1:5003/inpaint'
+import { inpaintAPI, deblurAPI } from './service'
 
 const ToolBar = () => {
   const {
@@ -87,6 +92,7 @@ const ToolBar = () => {
   }, [originImage])
 
   const handleInpaint = useCallback(() => {
+    viewReset(drawCanvas.current)
     const formData = getInpaintFormData(drawCanvas.current, originImage)
     setIsLoading(true)
     axios
@@ -111,7 +117,48 @@ const ToolBar = () => {
         }
       })
       .catch((err) => {
-        message.error(err)
+        message.error(err.message)
+        setIsLoading(false)
+      })
+  }, [
+    clearCanvas,
+    drawCanvas,
+    inpaintSnapShots,
+    inpaintSnapShotsID,
+    originImage,
+    setInpaintSnapShots,
+    setInpaintSnapShotsID,
+    setIsLoading,
+    setOriginImage,
+  ])
+
+  const handleDeblur = useCallback(() => {
+    viewReset(drawCanvas.current)
+    const formData = getDeblurFormData(originImage)
+    setIsLoading(true)
+    axios
+      .post(deblurAPI, formData)
+      .then((res) => {
+        const inpaintImage = new Image()
+        inpaintImage.crossOrigin = 'Anonymous'
+        inpaintImage.src = res.data.image_url
+        inpaintImage.onload = () => {
+          const newImage = new fabric.Image(inpaintImage)
+          clearCanvas()
+          storeInpaintSnapShots(
+            newImage,
+            inpaintSnapShots,
+            inpaintSnapShotsID,
+            setInpaintSnapShots,
+            setInpaintSnapShotsID,
+          )
+          setOriginImage(newImage)
+          message.success('success')
+          setIsLoading(false)
+        }
+      })
+      .catch((err) => {
+        message.error(err.message)
         setIsLoading(false)
       })
   }, [
@@ -288,6 +335,8 @@ const ToolBar = () => {
             />
 
             <ToolButton onClick={handleInpaint} icon={faWandMagicSparkles} title="inpaint" disabledPopConfirm={false} />
+
+            <ToolButton onClick={handleDeblur} icon={faGem} title="deblur" disabledPopConfirm={false} />
           </div>
         </div>
       </div>

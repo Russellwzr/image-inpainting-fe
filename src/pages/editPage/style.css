@@ -16,7 +16,11 @@
   top: 0;
   overflow: hidden;
   transition-property: max-height;
-  transition-duration: 0.4s;
-  transition-timing-function: linear;
+  transition-duration: 0.8s;
+  transition-timing-function: ease-in;
   z-index: 10;
+}
+
+.origin-img-box-border {
+  border-bottom: 6px solid #38bdf8;
 }

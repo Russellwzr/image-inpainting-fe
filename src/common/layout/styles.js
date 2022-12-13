@@ -16,5 +16,5 @@ export const StyledNav = styled.nav`
 export const StyledHeader = tw.header`mt-2 flex justify-between items-center`
 
 export const StyledFooter = styled.footer`
-  ${tw`grid py-6 text-sm font-light border-t-2 mt-10 place-items-center gap-y-2`};
+  ${tw`grid py-6 text-sm font-light border-t-2 mt-24 place-items-center gap-y-2`};
 `

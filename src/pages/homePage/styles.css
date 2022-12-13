@@ -1,0 +1,64 @@
+.resize-icon {
+  position: absolute;
+  top: 50%;
+  right: -43px;
+  transform: translate3d(-50%, -50%, 0);
+  color: #000;
+  background: rgba(255, 255, 255, 0.8);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgb(0 0 0 / 0%);
+  z-index: 10;
+}
+
+.resize-icon:after,
+.resize-icon:before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: 50%;
+  border-top: solid 2px;
+  border-left: solid 2px;
+  transform-origin: 0 0;
+}
+
+.resize-icon:before {
+  left: 8px;
+  transform: rotate(-45deg);
+}
+
+.resize-icon:after {
+  left: 38px;
+  transform: rotate(135deg);
+}
+
+.resize-save {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  height: 100%;
+  border-right: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.resize-container {
+  position: relative;
+  max-width: 700px;
+  width: 325px;
+  height: 433px;
+  resize: horizontal;
+  opacity: 0;
+  overflow: scroll;
+  z-index: 1000;
+}
+
+.resize-container::-webkit-scrollbar {
+  width: 10px;
+  height: 433px;
+  z-index: 1000;
+  cursor: ew-resize;
+}

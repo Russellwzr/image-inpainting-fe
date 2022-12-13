@@ -16,11 +16,11 @@ export const handleImageUpload = (e, drawCanvas, setOriginImage, setInpaintSnapS
       if (originWidth / originHeight > MAX_WIDTH / MAX_HEIGHT) {
         img.scaleToWidth(MAX_WIDTH)
         targetWidth = MAX_WIDTH
-        targetHeight = Math.round(img.height * img.scaleY)
+        targetHeight = Math.ceil(img.height * img.scaleY)
       } else {
         img.scaleToHeight(MAX_HEIGHT)
         targetHeight = MAX_HEIGHT
-        targetWidth = Math.round(img.width * img.scaleX)
+        targetWidth = Math.ceil(img.width * img.scaleX)
       }
     }
 
@@ -66,6 +66,13 @@ export const getInpaintFormData = (drawCanvas, originImage) => {
   let param = new FormData()
   const maskUrl = getMaskUrl(drawCanvas)
   param.append('mask', dataURLToBlob(maskUrl), 'mask.jpg')
+  const originUrl = originImage.toDataURL('image/jpeg')
+  param.append('origin', dataURLToBlob(originUrl), 'origin.jpg')
+  return param
+}
+
+export const getDeblurFormData = (originImage) => {
+  let param = new FormData()
   const originUrl = originImage.toDataURL('image/jpeg')
   param.append('origin', dataURLToBlob(originUrl), 'origin.jpg')
   return param

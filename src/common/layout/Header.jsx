@@ -14,7 +14,6 @@ const Header = () => {
       <StyledNav aria-label="Main Navigation">
         <Link to="/">home</Link>
         <Link to="/edit">edit</Link>
-        <Link to="/examples">examples</Link>
       </StyledNav>
     </StyledHeader>
   )

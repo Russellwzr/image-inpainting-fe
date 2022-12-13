@@ -207,7 +207,9 @@ const FabricEditor = () => {
           originImage === null ? `hidden` : `flex`
         } border-gray-300 border-2 rounded-xl border-dashed relative`}
       >
-        <div className={`${showOriginImage ? `max-h-full` : `max-h-0`} origin-img-box rounded-xl`}>
+        <div
+          className={`${showOriginImage ? `max-h-full origin-img-box-border` : `max-h-0`} origin-img-box rounded-xl`}
+        >
           <img
             src={
               inpaintSnapShotsID > 0
