@@ -222,10 +222,15 @@ const ToolBar = () => {
             onChange={handleUpload}
             tailWindStyle={`hover:bg-gray-200 border-gray-300 border-2 rounded-xl border-dashed bg-gray-100`}
           >
-            <div className="flex flex-col space-y-24 mx-40 my-40">
-              <FileImageOutlined className="text-6xl" />
-              <div className="text-2xl">Upload an image from your file system</div>
-            </div>
+            {useMemo(
+              () => (
+                <div className="flex flex-col space-y-24 mx-40 my-40">
+                  <FileImageOutlined className="text-6xl" />
+                  <div className="text-2xl">Upload an image from your file system</div>
+                </div>
+              ),
+              [],
+            )}
           </InputButton>
         </div>
         {/* Tool Bar */}
@@ -241,7 +246,12 @@ const ToolBar = () => {
               title="upload"
               onChange={handleUpload}
             >
-              <FontAwesomeIcon icon={faUpload} />
+              {useMemo(
+                () => (
+                  <FontAwesomeIcon icon={faUpload} />
+                ),
+                [],
+              )}
             </InputButton>
             <ToolButton onClick={handleDownload} icon={faDownload} title="download" />
           </div>
@@ -255,13 +265,19 @@ const ToolBar = () => {
           </div>
 
           <div className="flex space-x-2">
-            <ToolButton onClick={() => viewReset(drawCanvas.current)} icon={faEye} title="view reset" />
+            <ToolButton
+              onClick={useCallback(() => viewReset(drawCanvas.current), [drawCanvas])}
+              icon={faEye}
+              title="view reset"
+            />
 
             <ToolButton
               isActive={drawType === DRAW_TYPE.FREE_DRAW}
-              onClick={() =>
-                drawType === DRAW_TYPE.FREE_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.FREE_DRAW)
-              }
+              onClick={useCallback(
+                () =>
+                  drawType === DRAW_TYPE.FREE_DRAW ? setDrawType(DRAW_TYPE.NORMAL) : setDrawType(DRAW_TYPE.FREE_DRAW),
+                [drawType, setDrawType],
+              )}
               icon={faEraser}
               title="eraser"
             />
@@ -273,33 +289,38 @@ const ToolBar = () => {
                 max={30}
                 min={5}
                 value={penWidth}
-                onChange={(v) => {
-                  setPenWidth(v)
-                }}
+                onChange={useCallback(
+                  (v) => {
+                    setPenWidth(v)
+                  },
+                  [setPenWidth],
+                )}
               />
             </div>
 
             <ToolButton
               isActive={drawType === DRAW_TYPE.LASSO_DRAW}
-              onClick={() => {
+              onClick={useCallback(() => {
                 if (drawType === DRAW_TYPE.LASSO_DRAW) {
                   setDrawType(DRAW_TYPE.NORMAL)
                 } else {
                   setDrawType(DRAW_TYPE.LASSO_DRAW)
                   setActiveIndex({ lassoIndex: -1, pointIndex: -1 })
                 }
-              }}
+              }, [drawType, setActiveIndex, setDrawType])}
               icon={faDrawPolygon}
               title="lasso drawing"
             />
 
             <ToolButton
               isActive={drawType === DRAW_TYPE.LASSO_DRAG_POINTS}
-              onClick={() =>
-                drawType === DRAW_TYPE.LASSO_DRAG_POINTS
-                  ? setDrawType(DRAW_TYPE.NORMAL)
-                  : setDrawType(DRAW_TYPE.LASSO_DRAG_POINTS)
-              }
+              onClick={useCallback(
+                () =>
+                  drawType === DRAW_TYPE.LASSO_DRAG_POINTS
+                    ? setDrawType(DRAW_TYPE.NORMAL)
+                    : setDrawType(DRAW_TYPE.LASSO_DRAG_POINTS),
+                [drawType, setDrawType],
+              )}
               icon={faHand}
               title="lasso dragging"
             />
@@ -323,12 +344,12 @@ const ToolBar = () => {
             />
 
             <ToolButton
-              onMouseDown={() => {
+              onMouseDown={useCallback(() => {
                 setShowOriginImage(true)
-              }}
-              onMouseUp={() => {
+              }, [setShowOriginImage])}
+              onMouseUp={useCallback(() => {
                 setShowOriginImage(false)
-              }}
+              }, [setShowOriginImage])}
               icon={faCodeCompare}
               title="image comparision"
               disabled={backDisabled}

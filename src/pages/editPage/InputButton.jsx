@@ -1,8 +1,8 @@
-import React, { useRef } from 'react'
+import React, { useRef, memo } from 'react'
 import { Tooltip, Popconfirm } from 'antd'
 
 // eslint-disable-next-line react/prop-types
-const InputButton = ({ onChange, tailWindStyle, title = '', disabledPopConfirm = true, children }) => {
+const InputButton = memo(({ onChange, tailWindStyle = '', title = '', disabledPopConfirm = true, children = null }) => {
   const inputRef = useRef(null)
   return (
     <div>
@@ -31,6 +31,6 @@ const InputButton = ({ onChange, tailWindStyle, title = '', disabledPopConfirm =
       </Tooltip>
     </div>
   )
-}
+})
 
 export default InputButton

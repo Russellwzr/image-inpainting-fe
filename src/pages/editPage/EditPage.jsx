@@ -1,9 +1,12 @@
-import React, { useState, useRef } from 'react'
+import React, { memo, useState, useRef } from 'react'
 import { DRAW_TYPE, originSnapShot } from './constant'
 import ToolBar from './ToolBar'
 import FabricEditor from './FabricEditor'
 
 export const FabricContext = React.createContext()
+
+const MemoToolBar = memo(ToolBar)
+const MemoFabricEditor = memo(FabricEditor)
 
 const EditPage = () => {
   const drawCanvas = useRef(null)
@@ -49,8 +52,8 @@ const EditPage = () => {
         setShowOriginImage,
       }}
     >
-      <FabricEditor />
-      <ToolBar />
+      <MemoFabricEditor />
+      <MemoToolBar />
     </FabricContext.Provider>
   )
 }
