@@ -40,7 +40,7 @@ import {
 } from './fabricFunc/fabricSnapShots'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
-import { inpaintAPI, deblurAPI } from './service'
+import { serverURL, inpaintAPI, deblurAPI } from './service'
 
 const ToolBar = () => {
   const {
@@ -100,7 +100,7 @@ const ToolBar = () => {
       .then((res) => {
         const inpaintImage = new Image()
         inpaintImage.crossOrigin = 'Anonymous'
-        inpaintImage.src = res.data.image_url
+        inpaintImage.src = `${serverURL}${res.data.image_url}`
         inpaintImage.onload = () => {
           const newImage = new fabric.Image(inpaintImage)
           clearCanvas()
@@ -141,7 +141,7 @@ const ToolBar = () => {
       .then((res) => {
         const inpaintImage = new Image()
         inpaintImage.crossOrigin = 'Anonymous'
-        inpaintImage.src = res.data.image_url
+        inpaintImage.src = `${serverURL}${res.data.image_url}`
         inpaintImage.onload = () => {
           const newImage = new fabric.Image(inpaintImage)
           clearCanvas()
