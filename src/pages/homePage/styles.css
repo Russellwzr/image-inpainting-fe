@@ -47,7 +47,7 @@
 
 .resize-container {
   position: relative;
-  max-width: 700px;
+  max-width: 640px;
   width: 325px;
   height: 433px;
   resize: horizontal;
