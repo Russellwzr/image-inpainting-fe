@@ -40,7 +40,7 @@ import {
 } from './fabricFunc/fabricSnapShots'
 import InputButton from './InputButton'
 import ToolButton from './ToolButton'
-import { serverURL, inpaintAPI, deblurAPI } from './service'
+import { inpaintAPI, deblurAPI } from './service'
 
 const ToolBar = () => {
   const {
@@ -96,11 +96,12 @@ const ToolBar = () => {
     const formData = getInpaintFormData(drawCanvas.current, originImage)
     setIsLoading(true)
     axios
-      .post(inpaintAPI, formData)
+      .post(inpaintAPI, formData, { responseType: 'blob' })
       .then((res) => {
         const inpaintImage = new Image()
         inpaintImage.crossOrigin = 'Anonymous'
-        inpaintImage.src = `${serverURL}${res.data.image_url}`
+        inpaintImage.src = URL.createObjectURL(res.data)
+        console.log(inpaintImage.src)
         inpaintImage.onload = () => {
           const newImage = new fabric.Image(inpaintImage)
           clearCanvas()
@@ -137,11 +138,11 @@ const ToolBar = () => {
     const formData = getDeblurFormData(originImage)
     setIsLoading(true)
     axios
-      .post(deblurAPI, formData)
+      .post(deblurAPI, formData, { responseType: 'blob' })
       .then((res) => {
         const inpaintImage = new Image()
         inpaintImage.crossOrigin = 'Anonymous'
-        inpaintImage.src = `${serverURL}${res.data.image_url}`
+        inpaintImage.src = URL.createObjectURL(res.data)
         inpaintImage.onload = () => {
           const newImage = new fabric.Image(inpaintImage)
           clearCanvas()
