@@ -16,7 +16,7 @@
   top: 0;
   overflow: hidden;
   transition-property: max-height;
-  transition-duration: 0.8s;
+  transition-duration: 0.4s;
   transition-timing-function: ease-in;
   z-index: 10;
 }
