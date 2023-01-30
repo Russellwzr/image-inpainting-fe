@@ -5,13 +5,18 @@ Use the most advanced AI model to help you deblur your picture and flexibly remo
 * Front-End: React + Fabric + TailwindCSS 
 * Back-End: Pytorch + Flask (https://github.com/Russellwzr/image-inpainting-be)
 
-<video src="./docs/demo_video.mp4"></video>
+
+https://user-images.githubusercontent.com/53935275/215541927-25c47292-8ac5-4a82-836e-62ae3916a1f2.mp4
+
 
 ## Features
 
 * Image upload and download
 * Clear canvas
 * Undo and redo of canvas interactive operations
+
+https://user-images.githubusercontent.com/53935275/215542991-84ad0571-7d8b-4e99-868c-2f804e98b8e7.mp4
+
 * Viewport transformation: zoom in/out (mouse wheel) & pan (alt + left click)
 * Eraser with variable thickness
 * Drawing and editing of cardinal spline polygons
